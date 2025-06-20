@@ -7,7 +7,7 @@ try {
 } catch (Exception $e) {
     $return['code'] = 300;
     $return['data'] = null;
-    $return['msg'] = $e->getMessage();
+    $return['msg']  = $e->getMessage();
 }
 
 header('Content-Type: application/json');

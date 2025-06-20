@@ -7,15 +7,15 @@ try {
         throw new Exception('文件不能为空');
     }
     $config = [
-        'files' => $_FILES['file'],
-        'isSmall' => 0,
-        'isMark' => 0,
+        'files'     => $_FILES['file'],
+        'isSmall'   => 0,
+        'isMark'    => 0,
         'waterText' => 'test',
-        'isResize' => 0,
-        'filepath' => '',
+        'isResize'  => 0,
+        'filepath'  => '',
     ];
     $upload = new upload($config);
-    $data = $upload->upMore();
+    $data   = $upload->upMore();
     $return = [];
     if ($data['err_msg'] === '') {
         $return['code'] = 200;
@@ -27,7 +27,7 @@ try {
 } catch (Exception $e) {
     $return['code'] = 300;
     $return['data'] = null;
-    $return['msg'] = $e->getMessage();
+    $return['msg']  = $e->getMessage();
 }
 
 $jsonStr = json_encode($return, JSON_UNESCAPED_UNICODE);

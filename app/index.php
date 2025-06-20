@@ -22,14 +22,16 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     // 分组
     $r->addGroup('/api', function (FastRoute\RouteCollector $r) {
         // {id} must be a number (\d+)
-        $r->post('/contact', 'api/contact');
-        $r->get('/other', 'api/other');
-        $r->post('/upload', 'api/upload');
-        $r->post('/qiniu', 'api/qiniu');
         $r->get('/article/list', 'api/article-list');
         $r->get('/article/lists', 'api/article-lists');
         $r->get('/article/detail', 'api/article-detail');
         $r->get('/article/detail/{id:\d+}', 'api/article-detail');
+        $r->get('/cookies', 'api/cookies');
+        $r->get('/other', 'api/other');
+
+        $r->post('/contact', 'api/contact');
+        $r->post('/upload', 'api/upload');
+        $r->post('/qiniu', 'api/qiniu');
         // The /{title} suffix is optional
         // $r->get('/articles/{id:\d+}[/{title}]', 'get_article_handler');
         // $r->get('/users', 'get_all_users_handler');

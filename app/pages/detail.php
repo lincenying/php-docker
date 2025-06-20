@@ -3,10 +3,10 @@ require LCY_ROOT . 'vendor/autoload.php';
 require LCY_ROOT . 'inc/func.ubb.php';
 
 $loader = new \Twig\Loader\FilesystemLoader(LCY_ROOT . 'twig');
-$twig = new \Twig\Environment($loader, [
-    'cache' => LCY_ROOT . 'cache',
+$twig   = new \Twig\Environment($loader, [
+    'cache'       => LCY_ROOT . 'cache',
     'auto_reload' => true, //根据文件更新时间，自动更新缓存
-    'debug' => true,
+    'debug'       => true,
 ]);
 $twigFile = 'detail.twig';
 
@@ -18,11 +18,11 @@ if (empty($id)) {
 }
 
 // 详情数据
-$params = [$id];
-$sql = 'SELECT * FROM cyxw_archive where c_id = ?';
+$params      = [$id];
+$sql         = 'SELECT * FROM cyxw_archive where c_id = ?';
 $memCacheKey = get_sql_md5($sql, $params);
-$row = [];
-if ($onMemCache == false || !($row = $memCache->get($memCacheKey))) {
+$row         = [];
+if ($onMemCache == false || ! ($row = $memCache->get($memCacheKey))) {
     $row = $db->row($sql, $params);
     $onMemCache && $memCache->set($memCacheKey, $row, 0, 86400);
 }
@@ -32,16 +32,16 @@ $ubb->setString($row['c_content'] . $row['c_down'] . '   https://v3.cn.vuejs.org
 $row['c_content'] = $ubb->parse();
 
 $seo = [
-    'title' => $row['c_title'],
+    'title'   => $row['c_title'],
     'keyword' => $row['c_title'],
-    'desc' => $row['c_title'],
+    'desc'    => $row['c_title'],
 ];
 
 $twigData = [
     'global' => $global,
     'router' => $routeVars,
-    'seo' => $seo,
-    'row' => $row,
+    'seo'    => $seo,
+    'row'    => $row,
 ];
 
 // <=========== 业务代码结束

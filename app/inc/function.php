@@ -65,7 +65,7 @@ function check_spider()
  */
 function _is_empty($str)
 {
-    return ! isset($str) ? true : ($str === 0 || $str === '0' || ! empty($str) ? false : true);
+    return ! isset($str)  ?true : ($str === 0 || $str === '0' || ! empty($str)  ?false : true);
 }
 
 /**

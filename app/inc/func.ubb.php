@@ -9,14 +9,14 @@ class ubb
      ** $allowImgCode 是否开启图片
      ** $allowMediaCode 是否开启媒体
      */
-    public $message = '';
-    public $parseType = 0;
-    public $bbCodeOff = 0;
-    public $allowBbCode = 1;
-    public $allowImgCode = 1;
+    public $message        = '';
+    public $parseType      = 0;
+    public $bbCodeOff      = 0;
+    public $allowBbCode    = 1;
+    public $allowImgCode   = 1;
     public $allowMediaCode = 1;
-    public $autoLink = 0;
-    public $isRss = false;
+    public $autoLink       = 0;
+    public $isRss          = false;
 
     public function setString($str)
     {
@@ -27,11 +27,11 @@ class ubb
     {
         $message = $this->message;
         $message = str_replace('[/url][url', "[/url]\r\n[url", $message);
-        if (!$this->bbCodeOff && $this->autoLink) {
+        if (! $this->bbCodeOff && $this->autoLink) {
             $message = autoAddLink($message);
         }
         $msglower = strtolower($message);
-        if (!$this->bbCodeOff && $this->allowBbCode) {
+        if (! $this->bbCodeOff && $this->allowBbCode) {
             if (strpos($msglower, '[/url]') !== false) {
                 $message = preg_replace_callback(
                     "/\[url=([^\s\[\]]+)\]\[img\]\s*([^\[\<\r\n]+?)\s*\[\/img\]\[\/url\]\s*/is",
@@ -106,7 +106,7 @@ class ubb
                 }
             }
         }
-        if (!$this->bbCodeOff) {
+        if (! $this->bbCodeOff) {
             if (strpos($msglower, '[/img]') !== false) {
                 $message = preg_replace_callback("/\[img=(\d{1,4})[x|\,](\d{1,4})\]\s*([^\[\<\r\n]+?)\s*\[\/img\]/is", 'bbCodeUrl2', $message);
                 $message = preg_replace_callback("/\[img\]\s*([^\[\<\r\n]+?)\s*\[\/img\]\s*/is", 'bbCodeUrl1', $message);
@@ -121,8 +121,8 @@ function bbCodeUrl1($m)
 {
     global $ubb;
     $url = $m[1];
-    if (!preg_match('/\<.+?\>/s', $url)) {
-        if (!in_array(strtolower(substr($url, 0, 6)), ['http:/', 'https:', 'ftp://', 'rtsp:/', 'mms://'])) {
+    if (! preg_match('/\<.+?\>/s', $url)) {
+        if (! in_array(strtolower(substr($url, 0, 6)), ['http:/', 'https:', 'ftp://', 'rtsp:/', 'mms://'])) {
             $url = 'http://' . $url;
         }
     }
@@ -151,8 +151,8 @@ function bbCodeUrl2($m)
 {
     global $ubb;
     $url = $m[3];
-    if (!preg_match('/\<.+?\>/s', $url)) {
-        if (!in_array(strtolower(substr($url, 0, 6)), ['http:/', 'https:', 'ftp://', 'rtsp:/', 'mms://'])) {
+    if (! preg_match('/\<.+?\>/s', $url)) {
+        if (! in_array(strtolower(substr($url, 0, 6)), ['http:/', 'https:', 'ftp://', 'rtsp:/', 'mms://'])) {
             $url = 'http://' . $url;
         }
     }
@@ -165,20 +165,20 @@ function bbCodeUrl2($m)
     } else {
         $tag = '<a href="' . $url . '" target="_blank">' . $url . '</a>';
     }
-    if (!empty($logimgtitle)) {
+    if (! empty($logimgtitle)) {
         $tag = str_replace('{imgalt}', '预览图', $tag);
     }
     return $tag;
 }
 function parseUrl($m)
 {
-    $url = $m[1];
+    $url  = $m[1];
     $text = $m[5];
     if (
-        !$url &&
+        ! $url &&
         preg_match("/((https?|ftp|gopher|news|telnet|rtsp|mms|callto|bctp|ed2k|thunder|synacast){1}:\/\/|www\.)[^\[\"']+/i", trim($text), $matches)
     ) {
-        $url = $matches[0];
+        $url    = $matches[0];
         $length = 65;
         if (strlen($url) > $length) {
             $text = substr($url, 0, intval($length * 0.5)) . ' ... ' . substr($url, -intval($length * 0.3));
@@ -195,13 +195,13 @@ function parseUrl($m)
 }
 function parseImgUrl($m)
 {
-    $url = $m[1];
-    $img = $m[2];
+    $url     = $m[1];
+    $img     = $m[2];
     $arr_img = explode('.', $url);
-    $length = count($arr_img);
-    $ext = $arr_img[$length - 1];
-    $dturl = strpos($url, '?');
-    $ext = strtolower($ext);
+    $length  = count($arr_img);
+    $ext     = $arr_img[$length - 1];
+    $dturl   = strpos($url, '?');
+    $ext     = strtolower($ext);
     if ($ext == 'jpg' || $ext == 'jpeg' || $ext == 'png' || $ext == 'gif') {
         $return =
             "<div class='p_ubbimg'>
@@ -223,8 +223,8 @@ function parseImgUrl($m)
 function parseEmail($m)
 {
     $email = $m[1];
-    $text = $m[4];
-    if (!$email && preg_match('/\s*([a-z0-9\-_.+]+)@([a-z0-9\-_]+[.][a-z0-9\-_.]+)\s*/i', $text, $matches)) {
+    $text  = $m[4];
+    if (! $email && preg_match('/\s*([a-z0-9\-_.+]+)@([a-z0-9\-_]+[.][a-z0-9\-_.]+)\s*/i', $text, $matches)) {
         $email = trim($matches[0]);
         return '<a href="mailto:' . $email . '">' . $email . '</a>';
     } else {
@@ -234,12 +234,12 @@ function parseEmail($m)
 
 function parseTable($m)
 {
-    $width = $m[1];
+    $width   = $m[1];
     $bgcolor = $m[2];
     $message = $m[3];
     if (
-        !preg_match('/^\[tr(?:=([\(\)%,#\w]+))?\]\s*\[td(?:=(\d{1,2}),(\d{1,2})(?:,(\d{1,4}%?))?)?\]/', $message) &&
-        !preg_match('/^\<tr[^>]*?\>\s*<td[^>]*?\>/', $message)
+        ! preg_match('/^\[tr(?:=([\(\)%,#\w]+))?\]\s*\[td(?:=(\d{1,2}),(\d{1,2})(?:,(\d{1,4}%?))?)?\]/', $message) &&
+        ! preg_match('/^\<tr[^>]*?\>\s*<td[^>]*?\>/', $message)
     ) {
         return str_replace(
             '\\"',
@@ -256,7 +256,7 @@ function parseTable($m)
     $message = preg_replace_callback('/\[tr(?:=([\(\)%,#\w]+))?\]\s*\[td(?:=(\d{1,2}),(\d{1,2})(?:,(\d{1,4}%?))?)?\]/is', 'parseTrTr', $message);
     $message = preg_replace_callback('/\[\/td\]\s*\[td(?:=(\d{1,2}),(\d{1,2})(?:,(\d{1,4}%?))?)?\]/is', 'parseTrTd', $message);
     $message = preg_replace('/\[\/td\]\s*\[\/tr\]\s*/i', '</td></tr>', $message);
-    $return = '<table cellspacing="0" class="t_table" ' . ($width == '' ? null : 'style="width:' . $width . '"') . ($bgcolor ? ' bgcolor="' . $bgcolor . '">' : '>');
+    $return  = '<table cellspacing="0" class="t_table" ' . ($width == ''  ?null : 'style="width:' . $width . '"') . ($bgcolor ? ' bgcolor="' . $bgcolor . '">' : '>');
     $return .= $message;
     $return .= '</table>';
     return $return;
@@ -266,7 +266,7 @@ function parseTrTr($m)
     $bgcolor = 'tr';
     $colspan = $m[1];
     $rowspan = $m[2];
-    $width = $m[3];
+    $width   = $m[3];
     return ($bgcolor == 'td' ? '</td>' : '<tr' . ($bgcolor ? ' bgcolor="' . $bgcolor . '"' : '') . '>') . '<td' . ($colspan > 1 ? ' colspan="' . $colspan . '"' : '') . ($rowspan > 1 ? ' rowspan="' . $rowspan . '"' : '') . ($width ? ' width="' . $width . '"' : '') . '>';
 }
 function parseTrTd($m)
@@ -274,19 +274,19 @@ function parseTrTd($m)
     $bgcolor = $m[1];
     $colspan = $m[2];
     $rowspan = $m[3];
-    $width = $m[4];
+    $width   = $m[4];
     return ($bgcolor == 'td' ? '</td>' : '<tr' . ($bgcolor ? ' bgcolor="' . $bgcolor . '"' : '') . '>') . '<td' . ($colspan > 1 ? ' colspan="' . $colspan . '"' : '') . ($rowspan > 1 ? ' rowspan="' . $rowspan . '"' : '') . ($width ? ' width="' . $width . '"' : '') . '>';
 }
 function parseMedia($m)
 {
     global $c_type, $userid;
     $mediatype = $m[1];
-    $url = $m[4] . '.' . $m[5];
-    $width = $m[2];
-    $height = $m[3];
-    $isauto = 0;
-    $width = $width == '' ? '700' : $width;
-    $height = $height == '' ? '560' : $height;
+    $url       = $m[4] . '.' . $m[5];
+    $width     = $m[2];
+    $height    = $m[3];
+    $isauto    = 0;
+    $width     = $width == '' ? '700' : $width;
+    $height    = $height == '' ? '560' : $height;
     if ($mediatype == 'flv') {
         $str =
             '<div id="a1"></div>
@@ -311,11 +311,11 @@ function parseMedia($m)
 function parseFlash($m)
 {
     $mediatype = 'swf';
-    $url = $m[1];
-    $width = 700;
-    $height = 560;
-    $isauto = 0;
-    $str =
+    $url       = $m[1];
+    $width     = 700;
+    $height    = 560;
+    $isauto    = 0;
+    $str       =
         '<div class="lock">
             <embed src="' . $url . '" wmode="transparent" quality="high" bgcolor="#000000" width="' . $width . '" height="' . $height . '" name="simplevideostreaming" align="middle" allowScriptAccess="sameDomain" allowFullScreen="true" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" />
         </div>';

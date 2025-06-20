@@ -17,10 +17,10 @@ echo $get2;
 print_r($_GET);
 
 // 查询多条数据, 返回数组对象
-$sql = 'SELECT * FROM cyxw_cash';
+$sql         = 'SELECT * FROM cyxw_cash';
 $memCacheKey = get_sql_md5($sql);
-$person = [];
-if ($onMemCache == false || !($person = $memCache->get($memCacheKey))) {
+$person      = [];
+if ($onMemCache == false || ! ($person = $memCache->get($memCacheKey))) {
     $person = $db->query($sql);
     echo '$memCacheKey 未命中缓存';
     $onMemCache && $memCache->set($memCacheKey, $person, 0, 86400);
@@ -32,21 +32,21 @@ $persons_num = $db->single('SELECT count(*) as total FROM cyxw_cash');
 dd($persons_num, "查询数据数量, 返回数值", "single('SELECT count(*) FROM cyxw_cash')");
 
 // 查询单条数据 返回对应字段
-$sql = 'SELECT c_cashname FROM cyxw_cash WHERE c_id > ?';
+$sql  = 'SELECT c_cashname FROM cyxw_cash WHERE c_id > ?';
 $data = ['1'];
 echo get_sql_md5($sql, $data);
 $firstname = $db->single($sql, $data);
 dd($firstname, "查询单条数据, 返回对应字段", "single('SELECT c_cashname FROM cyxw_cash WHERE c_id > ?', ['1'])");
 
 // 查询单条数据, 返回对应字段数组, 键名为字段名
-$sql = 'SELECT c_id, c_cashname FROM cyxw_cash WHERE c_id > :id order by c_id desc';
+$sql  = 'SELECT c_id, c_cashname FROM cyxw_cash WHERE c_id > :id order by c_id desc';
 $data = ['id' => '1'];
 echo get_sql_md5($sql, $data);
 $id_age = $db->row($sql, $data);
 dd($id_age, "查询单条数据, 返回对应字段数组, 键名为字段名", "row('SELECT c_id, c_cashname FROM cyxw_cash WHERE c_id > :id ', ['id' => '1'])");
 
 // 查询单条数据, 返回对应字段数组, 键名为数字
-$sql = 'SELECT c_id, c_cashname FROM cyxw_cash WHERE c_cashname = :f';
+$sql  = 'SELECT c_id, c_cashname FROM cyxw_cash WHERE c_cashname = :f';
 $data = ['f' => '林岑影'];
 echo get_sql_md5($sql, $data);
 $id_age_num = $db->row($sql, $data, PDO::FETCH_NUM);

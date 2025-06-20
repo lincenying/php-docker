@@ -21,9 +21,9 @@ if ($onMemCache) {
     $memCache->connect('127.0.0.1', 11211) or die('MemCache Could not connect');
 }
 
-$global = [];
-$global['cacheTime'] = 900; //缓存时间
-$global['clientIp'] = get_ip();
+$global                = [];
+$global['cacheTime']   = 900; //缓存时间
+$global['clientIp']    = get_ip();
 $global['clientAgent'] = $_SERVER['HTTP_USER_AGENT'];
-$global['uri'] = $_SERVER['REQUEST_URI'];
-$global['ajaxFile'] = ['ajax'];
+$global['uri']         = $_SERVER['REQUEST_URI'];
+$global['ajaxFile']    = ['ajax'];

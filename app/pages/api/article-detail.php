@@ -5,17 +5,17 @@ require LCY_ROOT . 'inc/func.ubb.php';
 $id = isset($id) ? intval($id) : $routeVars['id'];
 
 $return = [];
-$row = null;
+$row    = null;
 
 try {
     if (empty($id)) {
         throw new Exception('ID不能为空');
     }
     // 详情数据
-    $params = [$id];
-    $sql = 'SELECT * FROM cyxw_archive where c_id = ?';
+    $params      = [$id];
+    $sql         = 'SELECT * FROM cyxw_archive where c_id = ?';
     $memCacheKey = get_sql_md5($sql, $params);
-    if ($onMemCache == false || !($row = $memCache->get($memCacheKey))) {
+    if ($onMemCache == false || ! ($row = $memCache->get($memCacheKey))) {
         $row = $db->row($sql, $params);
         $onMemCache && $memCache->set($memCacheKey, $row, 0, 86400);
     }
@@ -32,7 +32,7 @@ try {
 } catch (Exception $e) {
     $return['code'] = 300;
     $return['data'] = null;
-    $return['msg'] = $e->getMessage();
+    $return['msg']  = $e->getMessage();
 }
 
 $jsonStr = json_encode($return, JSON_UNESCAPED_UNICODE);

@@ -10,7 +10,7 @@ try {
 } catch (Exception $e) {
     $return['code'] = 300;
     $return['data'] = null;
-    $return['msg'] = $e->getMessage();
+    $return['msg']  = $e->getMessage();
 }
 
 $jsonStr = json_encode($return, JSON_UNESCAPED_UNICODE);
