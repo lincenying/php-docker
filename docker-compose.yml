@@ -1,18 +1,16 @@
 services:
-  php-app-server:
-    container_name: php-app-server
-    image: lincenying/php-app-server:${TAG}
+  app_php:
+    container_name: app-php
+    image: lincenying/app-php:${TAG}
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./app:/home/web/php-template
     networks:
       - app-network
     depends_on:
-      - php-mysql-db
+      - mysql_db_php
     environment:
-      DB_HOST: php-mysql-db
+      DB_HOST: mysql_db_php
       DB_PORT: 3306
       DB_DATABASE: cyxiaowu
       DB_USERNAME: user
@@ -20,21 +18,21 @@ services:
     env_file:
       - .env
 
-  php-nginx-server:
-    container_name: php-nginx-server
-    image: nginx:latest
+  nginx_php:
+    container_name: nginx-php
+    image: lincenying/nginx-php:${TAG}
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
     ports:
       - "8084:80"
-    volumes:
-      - ./app:/home/web/php-template
-      - ./nginx/conf.d:/etc/nginx/conf.d
     networks:
       - app-network
     depends_on:
-      - php-app-server
+      - app_php
 
-  php-mysql-db:
-    container_name: php-mysql-db
+  mysql_db_php:
+    container_name: mysql-db-php
     image: mysql:8.0
     command: --default-authentication-plugin=mysql_native_password
     environment:
@@ -46,7 +44,7 @@ services:
       - "3306:3306"
     volumes:
       - ./app/mysql.sql:/home/mysql/mysql.sql
-      - /Users/lincenying/web/mysqldb:/var/lib/mysql
+      - ${MYSQL_DIR:-./data/mysqldb}:/var/lib/mysql
     networks:
       - app-network
 

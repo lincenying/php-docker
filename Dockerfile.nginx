@@ -1,0 +1,8 @@
+FROM nginx:latest
+
+# 去掉官方默认站点，避免 default.conf 抢占 80 端口
+RUN rm -f /etc/nginx/conf.d/default.conf
+
+# Nginx 需要源码目录以提供静态资源，并配合 try_files
+COPY app/ /home/web/app-php/
+COPY nginx/conf.d/ /etc/nginx/conf.d/

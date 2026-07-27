@@ -1,4 +1,4 @@
-# php-template
+# app-php
 
 #### 安装 composer
 ```bash
@@ -26,14 +26,14 @@ server {
     location / {
         autoindex on;
         # 项目目录
-        root /home/web/php/php-template/app/;
+        root /home/web/php/app-php/app/;
         index index.html index.htm index.php;
         try_files $uri $uri/ /index.php?q=$uri&$args;
     }
 
     location ~ \.php$ {
         # 项目目录
-        root /home/web/php/php-template/app/;
+        root /home/web/php/app-php/app/;
         fastcgi_pass   127.0.0.1:9000;
         fastcgi_index  index.php;
         fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
@@ -81,19 +81,11 @@ webserver:
 ```bash
 # 生成镜像及启动容器
 # 后端服务器一起启动
-docker compose build --no-cache
-docker compose up -d
+docker compose -f docker-compose.yml build --no-cache
+docker compose -f docker-compose.yml up -d
 
 # 进入mysql_db容器
-docker exec -it php-mysql-db /bin/bash
+docker exec -it mysql-db-php /bin/bash
 # 恢复mysql数据库
 mysql -uuser -p cyxiaowu < /home/mysql/mysql.sql
-
-# 进入app容器
-docker exec -it php-app-server /bin/bash
-# 安装composer依赖
-cd /home/web/php-template
-composer install --no-dev --no-scripts --no-autoloader
-composer dump-autoload --optimize
-
 ```
