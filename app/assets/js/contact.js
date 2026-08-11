@@ -1,29 +1,28 @@
-/* global Vue */
+import { createApp, reactive, shallowRef } from 'vue'
 
-const $app$ = new Vue({
-    el: '#app',
-    name: 'app',
-    components: {},
-    directives: {},
-    data: {
-        form: {
+const $app$ = createApp({
+    setup() {
+        const form = reactive({
             name: '',
             email: '',
             message: '',
-        },
-        data: null,
-    },
-    computed: {},
-    watch: {},
-    mounted() {},
-    methods: {
-        handleSubmit() {
-            console.log(this.form)
-            $.post('/api/contact', this.form, null, 'json').then((data) => {
-                console.log(data)
-                this.data = data.data
+        })
+        const data = shallowRef(null)
+
+        const handleSubmit = () => {
+            console.log(form)
+            $.post('/api/contact', form, null, 'json').then((res) => {
+                console.log(res)
+                data.value = res.data
             })
-        },
+        }
+
+        return {
+            form,
+            data,
+            handleSubmit,
+        }
     },
-})
+}).mount('#app')
+
 window.$app$ = $app$

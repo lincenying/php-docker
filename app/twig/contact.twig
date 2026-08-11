@@ -21,6 +21,12 @@
 {% endblock %}
 
 {% block js %}
-<script src="https://unpkg.zhimg.com/vue@2.7.14/dist/vue.js"></script>
-<script src="/assets/js/contact.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "vue": "https://fastly.jsdelivr.net/npm/vue/dist/vue.esm-browser.prod.js"
+            }
+        }
+    </script>
+    <script type="module" src="/assets/js/contact.js"></script>
 {% endblock %}
