@@ -32,8 +32,8 @@ RUN chown -R www-data:www-data /home/web/app-php \
 # docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/php:8.3-fpm
 # docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/php:8.3-fpm php:8.3-fpm
 # 构建镜像
-# docker build -t lincenying/app-php:1.26.0727 -f ./Dockerfile .
+# docker build -t lincenying/app-php:1.26.0829 -f ./Dockerfile .
 # 运行镜像
-# docker run -d --name container-php-app lincenying/app-php:1.26.0727
+# docker run -d --name container-php-app lincenying/app-php:1.26.0829
 # 进入镜像
 # docker exec -it container-php-app /bin/sh

@@ -11,8 +11,8 @@ function dd($v, $t = '', $sql = '')
     echo '</pre>';
 }
 
-echo $get1;
-echo $get2;
+echo $get1 ?? 'unset get1';
+echo $get2 ?? 'unset get2';
 
 print_r($_GET);
 
