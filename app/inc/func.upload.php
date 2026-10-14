@@ -41,57 +41,57 @@ class upload
 
     public function __construct($initArray)
     {
-        if ($initArray['files']) {
+        if (! empty($initArray['files'])) {
             $this->files = $initArray['files'];
         }
-        if ($initArray['filepath']) {
+        if (! empty($initArray['filepath'])) {
             $this->filePath = $initArray['filepath'];
         } else {
             $this->filePath = 'upload/' . date('Ym') . '/';
         }
-        if ($initArray['fileText']) {
+        if (! empty($initArray['fileText'])) {
             $this->fileText = $initArray['fileText'];
         }
-        if ($initArray['attaMaxSize']) {
+        if (! empty($initArray['attaMaxSize'])) {
             $this->attaMaxSize = $initArray['attaMaxSize'];
         }
-        if ($initArray['isSmall']) {
+        if (! empty($initArray['isSmall'])) {
             $this->isSmall = $initArray['isSmall'];
         }
-        if ($initArray['isMark']) {
+        if (! empty($initArray['isMark'])) {
             $this->isMark = $initArray['isMark'];
         }
-        if ($initArray['waterText']) {
+        if (! empty($initArray['waterText'])) {
             $this->waterText = $initArray['waterText'];
         }
-        if ($initArray['textSize']) {
+        if (! empty($initArray['textSize'])) {
             $this->textSize = $initArray['textSize'];
         }
-        if ($initArray['logoName']) {
+        if (! empty($initArray['logoName'])) {
             $this->logoName = $initArray['logoName'];
         }
-        if ($initArray['logoPos']) {
+        if (! empty($initArray['logoPos'])) {
             $this->logoPos = $initArray['logoPos'];
         }
-        if ($initArray['logoAngle']) {
+        if (! empty($initArray['logoAngle'])) {
             $this->logoAngle = $initArray['logoAngle'];
         }
-        if ($initArray['smallFolder']) {
+        if (! empty($initArray['smallFolder'])) {
             $this->smallFolder = $initArray['smallFolder'];
         }
-        if ($initArray['markFolder']) {
+        if (! empty($initArray['markFolder'])) {
             $this->markFolder = $initArray['markFolder'];
         }
-        if ($initArray['resizeFolder']) {
+        if (! empty($initArray['resizeFolder'])) {
             $this->resizeFolder = $initArray['resizeFolder'];
         }
-        if ($initArray['isResize']) {
+        if (! empty($initArray['isResize'])) {
             $this->isResize = $initArray['isResize'];
         }
-        if ($initArray['newWidth']) {
+        if (! empty($initArray['newWidth'])) {
             $this->newWidth = $initArray['newWidth'];
         }
-        if ($initArray['newHeight']) {
+        if (! empty($initArray['newHeight'])) {
             $this->newHeight = $initArray['newHeight'];
         }
         $this->nowDate = date('YmdHis');
@@ -296,16 +296,16 @@ class upload
             $logo_image_w    = imagesx($logo_image);
             $logo_image_h    = imagesy($logo_image);
             $temp_logo_image = $this->getPos($width, $height, $this->logoPos, $logo_image);
-            $logo_image_x    = ceil($temp_logo_image['dest_x']);
-            $logo_image_y    = ceil($temp_logo_image['dest_y']);
+            $logo_image_x    = (int) ceil($temp_logo_image['dest_x']);
+            $logo_image_y    = (int) ceil($temp_logo_image['dest_y']);
             @imagecopymerge($newImg, $logo_image, $logo_image_x, $logo_image_y, 0, 0, $logo_image_w, $logo_image_h, 75);
         } else {
             $white          = imageColorAllocate($newImg, 255, 255, 255);
             $black          = imageColorAllocate($newImg, 0, 0, 0);
             $alpha          = imageColorAllocateAlpha($newImg, 230, 230, 230, 40);
             $temp_logo_text = $this->getPos($width, $height, $this->logoPos);
-            $logo_text_x    = ceil($temp_logo_text['dest_x']);
-            $logo_text_y    = ceil($temp_logo_text['dest_y']);
+            $logo_text_x    = (int) ceil($temp_logo_text['dest_x']);
+            $logo_text_y    = (int) ceil($temp_logo_text['dest_y']);
             @ImageTTFText($newImg, $this->textSize, $this->logoAngle, $logo_text_x, $logo_text_y, $black, $this->fontType, $this->waterText);
         }
 

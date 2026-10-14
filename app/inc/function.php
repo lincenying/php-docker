@@ -4,7 +4,10 @@ if (isset($_REQUEST['GLOBALS']) || isset($_FILES['GLOBALS'])) {
 }
 foreach (['_COOKIE', '_GET', '_POST'] as $_request) {
     foreach ($$_request as $_key => $_value) {
-        $_key[0] != '_' && ($$_key = $_value);
+        if (! is_string($_key) || $_key === '' || $_key[0] === '_') {
+            continue;
+        }
+        $$_key = $_value;
     }
 }
 
@@ -377,9 +380,12 @@ function get_random_str($length, $type)
         case 'Aa1':
             $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz';
             break;
+        default:
+            $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            break;
     }
-    $max = strlen($chars) - 1;
-    mt_srand((float) microtime() * 1000000);
+    $hash = '';
+    $max  = strlen($chars) - 1;
     for ($i = 0; $i < $length; $i++) {
         $hash .= $chars[mt_rand(0, $max)];
     }
@@ -698,11 +704,10 @@ function replace_quotes($str, $isdel = 9)
 {
     $str = trim($str);
     if ($isdel == 9) {
-        $str = ereg_replace("'", "\'", $str);
-        $str = ereg_replace('"', '\"', $str);
+        $str = str_replace("'", "\\'", $str);
+        $str = str_replace('"', '\\"', $str);
     } else {
-        $str = ereg_replace("'", '', $str);
-        $str = ereg_replace('"', '', $str);
+        $str = str_replace(["'", '"'], '', $str);
         $str = preg_replace('/([\\\]*)/is', '', $str);
     }
     return $str;
@@ -734,10 +739,12 @@ function str_cut($str, $start, $len)
 function words_cut($string, $length, $sss = 0)
 {
     if (strlen($string) > $length) {
+        $addstr = '';
         if ($sss) {
             $length = $length - 3;
             $addstr = '...';
         }
+        $wordscut = '';
         for ($i = 0; $i < $length; $i++) {
             if (ord($string[$i]) > 127) {
                 $wordscut .= $string[$i] . $string[$i + 1];

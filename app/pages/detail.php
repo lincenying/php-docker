@@ -28,7 +28,7 @@ if ($onMemCache == false || ! ($row = $memCache->get($memCacheKey))) {
 }
 
 $ubb = new Ubb();
-$ubb->setString($row['c_content'] . $row['c_down'] . '   https://v3.cn.vuejs.org/api/composition-api.html');
+$ubb->setString($row['c_content'] . ($row['c_down'] ?? '') . '   https://v3.cn.vuejs.org/api/composition-api.html');
 $row['c_content'] = $ubb->parse();
 
 $seo = [

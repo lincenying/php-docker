@@ -1,5 +1,4 @@
 <?php
-mt_srand((float) microtime() * 1000000);
 $logimgtitle = '';
 
 class ubb

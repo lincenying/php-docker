@@ -52,7 +52,7 @@ class DB
      */
     private function Connect()
     {
-        $this->settings = parse_ini_file('settings.ini.php');
+        $this->settings = parse_ini_file(__DIR__ . '/settings.ini.php');
         $host           = getenv('DB_HOST') ?? $this->settings['host'];         // 从环境变量获取主机名（db）
         $dbname         = getenv('DB_DATABASE') ?? $this->settings['dbname'];   // 数据库名（cyxiaowu）
         $user           = getenv('DB_USERNAME') ?? $this->settings['user'];     // 用户名（user）
