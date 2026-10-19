@@ -17,7 +17,7 @@ PHP 8.3 + Nginx + MySQL 8 的 Docker 项目。页面由 Twig 渲染，路由使�
 [`.env`](.env) 提供镜像标签，会提交到仓库：
 
 ```bash
-TAG=1.26.1014
+TAG=1.26.1019
 ```
 
 数据库路径和账号放在 [`.env.local`](.env.local)（已加入 `.gitignore`）。Compose 默认只读取 `.env`，启动时需要同时指定这两个文件。

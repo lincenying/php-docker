@@ -1,15 +1,15 @@
 {% extends 'layout.twig' %}
 
 {% block content %}
-	<div class="row">
-		<div class="col-4">
+	<div class="layout-split">
+		<aside class="layout-side">
 			{% block sidebar %}
-				<h1>Hot news</h1>
+				<h2>Hot news</h2>
 				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab, animi at cupiditate doloribus ducimus facere neque quia? Accusantium fuga, odit.</p>
 				<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Molestias, quaerat.</p>
 			{% endblock sidebar %}
-		</div>
-		<div class="col-8">
+		</aside>
+		<div class="layout-main">
 			{% block main %}{% endblock main %}
 		</div>
 	</div>

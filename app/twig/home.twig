@@ -1,23 +1,31 @@
 {% extends 'layout.twig' %}
 
 {% block content %}
-    <table>
-    {% for val in list %}
-        <tr>
-            <td>{{ val.c_id }}</td>
-            <td>{{ val.c_cateid }}</td>
-            <td><a href="/detail/{{ val.c_id }}">{{ val.c_title }}</a></td>
-            <td>{{ val.c_userid }}</td>
-            <td>{{ val.c_user }}</td>
-            <td>{{ val.c_posttime }}</td>
-        </tr>
-    {% endfor %}
-    </table>
-    <div class="pjax-box">
+    <header class="page-intro">
+        <p class="kicker">列表</p>
+        <h1>文章</h1>
+        <p class="page-meta">{{ total }} 篇</p>
+    </header>
+    {% if list is empty %}
+        <p class="empty">暂时没有文章。</p>
+    {% else %}
+        <ul class="article-list">
+        {% for val in list %}
+            <li style="--i: {{ loop.index0 }}">
+                <a class="article-link" href="/detail/{{ val.c_id }}">
+                    <span class="article-id">{{ '%04d'|format(val.c_id) }}</span>
+                    <span class="article-title">{{ val.c_title }}</span>
+                    <time class="article-time" datetime="{{ val.c_posttime }}">{{ val.c_posttime }}</time>
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    <nav class="pager" aria-label="分页">
         <ul id="page">
         {% autoescape false %}
             {{ pages }}
         {% endautoescape %}
         </ul>
-    </div>
+    </nav>
 {% endblock %}

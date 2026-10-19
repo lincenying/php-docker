@@ -1,13 +1,15 @@
 {% macro input(name, label, value = null, options = []) %}
+    {% set input_type = name == 'email' ? 'email' : (name == 'pass' ? 'password' : 'text') %}
+    {% set autocomplete = name == 'email' ? 'email' : (name == 'pass' ? 'current-password' : (name == 'name' ? 'name' : 'on')) %}
     <div class="form-group {{ options.class }}">
-        <label for="{{ name }}"> {{ label }}</label>
-        <input placeholder="{{ value }}" type="{{ name == 'email' ? 'email' : 'text' }}" v-model="form.{{ name }}" class="form-control" id="{{ name }}" name="{{ name }}">
+        <label for="{{ name }}">{{ label }}</label>
+        <input placeholder="{{ value }}" type="{{ input_type }}" autocomplete="{{ autocomplete }}" v-model="form.{{ name }}" class="form-control" id="{{ name }}" name="{{ name }}">
     </div>
 {% endmacro %}
 
 {% macro textarea(name, label, value = null, options = []) %}
     <div class="form-group {{ options.class }}">
-        <label for="{{ name }}"> {{ label }}</label>
-        <textarea type="text" class="form-control" id="{{ name }}" name="{{ name }}" v-model="form.{{ name }}"></textarea>
+        <label for="{{ name }}">{{ label }}</label>
+        <textarea class="form-control" id="{{ name }}" name="{{ name }}" placeholder="{{ value }}" v-model="form.{{ name }}"></textarea>
     </div>
 {% endmacro %}

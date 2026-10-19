@@ -3,19 +3,32 @@
 {% import 'import/form.twig' as form %}
 
 {% block content %}
+    <header class="page-intro">
+        <p class="kicker">表单</p>
+        <h1>联系</h1>
+    </header>
     {% verbatim %}
 	<template v-if="data">
-		<div>Your name: {{ data.name }}</div>
-		<div>Email: {{ data.email }}</div>
-		<div>Message: {{ data.message }}</div>
+		<div class="receipt" role="status">
+			<p class="receipt-title">已收到</p>
+			<div>Your name: {{ data.name }}</div>
+			<div>Email: {{ data.email }}</div>
+			<div>Message: {{ data.message }}</div>
+		</div>
+	</template>
+	<template v-if="error">
+		<p class="form-error" v-text="error" role="alert"></p>
 	</template>
     {% endverbatim %}
-    <form action="" method="post">
+    <form class="form-panel" action="" method="post">
         {{ form.input('name', 'Your name', '请输入用户名', {class: 'superclass'}) }}
         {{ form.input('email', 'Email', '请输入邮箱') }}
-        {{ form.textarea('message', 'Message') }}
-        <div class="form-group">
-            <button @click.stop.prevent="handleSubmit" type="submit" class="btn btn-primary">Send</button>
+        {{ form.textarea('message', 'Message', '请输入留言') }}
+        <div class="form-actions">
+            <button @click.stop.prevent="handleSubmit" type="submit" class="button" :disabled="pending">
+                <span v-if="!pending">发送</span>
+                <template v-else>发送中…</template>
+            </button>
         </div>
     </form>
 {% endblock %}

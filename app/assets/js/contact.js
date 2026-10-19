@@ -1,4 +1,4 @@
-import { createApp, reactive, shallowRef } from 'vue'
+import { createApp, reactive, ref, shallowRef } from 'vue'
 
 const $app$ = createApp({
     setup() {
@@ -8,18 +8,26 @@ const $app$ = createApp({
             message: '',
         })
         const data = shallowRef(null)
+        const pending = ref(false)
+        const error = ref('')
 
         const handleSubmit = () => {
-            console.log(form)
+            error.value = ''
+            pending.value = true
             $.post('/api/contact', form, null, 'json').then((res) => {
-                console.log(res)
                 data.value = res.data
+            }).fail(() => {
+                error.value = '发送失败，请稍后再试。'
+            }).always(() => {
+                pending.value = false
             })
         }
 
         return {
             form,
             data,
+            pending,
+            error,
             handleSubmit,
         }
     },

@@ -29,7 +29,7 @@ if ($onMemCache == false || ! ($total = $memCache->get($totalMemCacheKey))) {
 // 分页设置
 $classPage = new page(['total' => $total, 'now_index' => $page, 'per_page' => $per_page, 'pageName' => 'page', 'url' => '/?', 'rewrite' => false]);
 $limitLeft = $classPage->offset;
-$pages     = $classPage->show(2);
+$pages     = $classPage->show(4);
 
 // 列表数据
 $order       = ' order by c_id desc';

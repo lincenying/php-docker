@@ -3,19 +3,30 @@
 {% import 'import/form.twig' as form %}
 
 {% block content %}
+    <header class="page-intro">
+        <p class="kicker">账户</p>
+        <h1>登录</h1>
+    </header>
     {% verbatim %}
         <template v-if="data">
-            <div>Your name:
-                {{ data.name }}</div>
-            <div>Your pass:
-                {{ data.pass }}</div>
+            <div class="receipt" role="status">
+                <p class="receipt-title">已提交</p>
+                <div>Your name: {{ data.name }}</div>
+                <div>Your pass: {{ data.pass }}</div>
+            </div>
+        </template>
+        <template v-if="error">
+            <p class="form-error" v-text="error" role="alert"></p>
         </template>
     {% endverbatim %}
-    <form action="" method="post">
+    <form class="form-panel" action="" method="post">
         {{ form.input('name', 'Your name', '请输入用户名', {class: 'superclass'}) }}
         {{ form.input('pass', 'Your pass', '请输入密码') }}
-        <div class="form-group">
-            <button @click.stop.prevent="handleSubmit" type="submit" class="btn btn-primary">Send</button>
+        <div class="form-actions">
+            <button @click.stop.prevent="handleSubmit" type="submit" class="button" :disabled="pending">
+                <span v-if="!pending">登录</span>
+                <template v-else>登录中…</template>
+            </button>
         </div>
     </form>
 {% endblock %}
