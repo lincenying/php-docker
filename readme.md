@@ -17,7 +17,7 @@ PHP 8.3 + Nginx + MySQL 8 的 Docker 项目。页面由 Twig 渲染，路由使�
 [`.env`](.env) 提供镜像标签，会提交到仓库：
 
 ```bash
-TAG=1.26.1019
+TAG=1.26.1021
 ```
 
 数据库路径和账号放在 [`.env.local`](.env.local)（已加入 `.gitignore`）。Compose 默认只读取 `.env`，启动时需要同时指定这两个文件。
@@ -28,11 +28,18 @@ MYSQL_ROOT_PASSWORD=这是root密码
 MYSQL_DATABASE=这是数据库名
 MYSQL_USER=这是数据库用户
 MYSQL_PASSWORD=这是数据库密码
+QINIU_ACCESS_KEY=七牛AccessKey
+QINIU_SECRET_KEY=七牛SecretKey
+UPLOAD_TOKEN=本地上传接口的token
 ```
 
 `MYSQL_DIR` 会挂载到容器的 `/var/lib/mysql`。未设置时使用项目下的 `./data/mysqldb`。
 
 PHP 连接数据库时优先读环境变量 `DB_HOST`、`DB_PORT`、`DB_DATABASE`、`DB_USERNAME`、`DB_PASSWORD`（在 `docker-compose.yml` 里与上面的 MySQL 变量对应）。没有环境变量时，回退到 [`app/inc/settings.ini.php`](app/inc/settings.ini.php)。
+
+七牛上传读 `QINIU_ACCESS_KEY`、`QINIU_SECRET_KEY`，同样由 `docker-compose.yml` 从 `.env.local` 注入。这两个值不要写进 PHP 源码。
+
+本地上传接口 `/api/upload` 会把请求里的 `token`（或 `Authorization: Bearer`）和 `UPLOAD_TOKEN` 比较，不一致则拒绝上传。
 
 改端口、域名或 HTTPS 时编辑 [`nginx/conf.d/php.conf`](nginx/conf.d/php.conf)。站点根目录是容器内的 `/home/web/app-php/`。改完需要重新构建 Nginx 镜像。
 
