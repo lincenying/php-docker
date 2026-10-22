@@ -8,7 +8,8 @@ services:
     networks:
       - app-network
     depends_on:
-      - mysql_db_php
+      mysql_db_php:
+        condition: service_healthy
     environment:
       DB_HOST: mysql_db_php
       DB_PORT: 3306
@@ -20,6 +21,14 @@ services:
       UPLOAD_TOKEN: ${UPLOAD_TOKEN:-}
     env_file:
       - .env
+      - .env.local
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/9000'"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
 
   nginx_php:
     container_name: nginx-php
@@ -32,7 +41,9 @@ services:
     networks:
       - app-network
     depends_on:
-      - app_php
+      app_php:
+        condition: service_healthy
+    restart: unless-stopped
 
   mysql_db_php:
     container_name: mysql-db-php
@@ -48,8 +59,15 @@ services:
     volumes:
       - ./app/mysql.sql:/home/mysql/mysql.sql
       - ${MYSQL_DIR:-./data/mysqldb}:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
     networks:
       - app-network
+    restart: unless-stopped
 
 volumes:
   php-mysql-data:
