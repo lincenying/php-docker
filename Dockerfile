@@ -42,8 +42,8 @@ CMD ["php-fpm"]
 # docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/php:8.3-fpm
 # docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/php:8.3-fpm php:8.3-fpm
 # 构建镜像
-# docker build -t lincenying/app-php:1.26.1022 -f ./Dockerfile .
+# docker build -t lincenying/app-php:1.26.1023 -f ./Dockerfile .
 # 运行镜像
-# docker run -d --name container-php-app lincenying/app-php:1.26.1022
+# docker run -d --name container-php-app lincenying/app-php:1.26.1023
 # 进入镜像
 # docker exec -it container-php-app /bin/sh

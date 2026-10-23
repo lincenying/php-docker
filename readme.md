@@ -17,7 +17,7 @@ PHP 8.3 + Nginx + MySQL 8 的 Docker 项目。页面由 Twig 渲染，路由使�
 [`.env`](.env) 提供镜像标签，会提交到仓库：
 
 ```bash
-TAG=1.26.1022
+TAG=1.26.1023
 ```
 
 数据库路径和账号放在 [`.env.local`](.env.local)（已加入 `.gitignore`）。Compose 默认只读取 `.env`，启动时需要同时指定这两个文件。
@@ -50,9 +50,9 @@ PHP 连接数据库时优先读环境变量 `DB_HOST`、`DB_PORT`、`DB_DATABASE
 基础镜像拉不下来时，可以先换国内源再打标签：
 
 ```bash
-docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/php:8.3-fpm
-docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/php:8.3-fpm php:8.3-fpm
-docker rmi swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/php:8.3-fpm
+docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/php:8.3.36-fpm
+docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/php:8.3.36-fpm php:8.3-fpm
+docker rmi swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/php:8.3.36-fpm
 ```
 
 构建并启动：
