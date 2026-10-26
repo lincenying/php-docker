@@ -47,8 +47,8 @@ services:
 
   mysql_db_php:
     container_name: mysql-db-php
-    image: mysql:8.0
-    command: --default-authentication-plugin=mysql_native_password
+    image: mysql:8.4
+    command: --mysql-native-password=ON
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-database_name}

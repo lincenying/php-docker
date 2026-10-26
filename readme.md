@@ -1,6 +1,6 @@
 # app-php
 
-PHP 8.3 + Nginx + MySQL 8 的 Docker 项目。页面由 Twig 渲染，路由使用 FastRoute。源码和 Nginx 配置在构建时打进镜像，运行时不挂载代码目录。
+PHP 8.3 + Nginx + MySQL 8.4 的 Docker 项目。页面由 Twig 渲染，路由使用 FastRoute。源码和 Nginx 配置在构建时打进镜像，运行时不挂载代码目录。
 
 ## 服务
 
@@ -8,7 +8,7 @@ PHP 8.3 + Nginx + MySQL 8 的 Docker 项目。页面由 Twig 渲染，路由使�
 | --- | --- | --- |
 | `app_php` | `app-php` | PHP-FPM，镜像 `lincenying/app-php` |
 | `nginx_php` | `nginx-php` | Nginx，宿主机 `8084` 映射容器 `80` |
-| `mysql_db_php` | `mysql-db-php` | MySQL 8，宿主机 `3306` |
+| `mysql_db_php` | `mysql-db-php` | MySQL 8.4，宿主机 `3306` |
 
 访问：<http://localhost:8084>
 
