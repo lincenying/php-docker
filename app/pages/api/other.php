@@ -1,9 +1,8 @@
 <?php
 require 'api-header.php';
 
-$return         = [];
-$return['code'] = 400;
-$return['data'] = null;
-$jsonStr        = json_encode($return, JSON_UNESCAPED_UNICODE);
-
-echo $jsonStr;
+json_response([
+    'code' => 404,
+    'data' => null,
+    'msg'  => '接口不存在',
+], 404);

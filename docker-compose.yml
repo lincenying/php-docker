@@ -18,7 +18,10 @@ services:
       DB_PASSWORD: ${MYSQL_PASSWORD:-MYSQL_password}
       QINIU_ACCESS_KEY: ${QINIU_ACCESS_KEY:-}
       QINIU_SECRET_KEY: ${QINIU_SECRET_KEY:-}
+      QINIU_BUCKET: ${QINIU_BUCKET:-default}
+      QINIU_DOMAIN: ${QINIU_DOMAIN:-http://cdn.mmxiaowu.com}
       UPLOAD_TOKEN: ${UPLOAD_TOKEN:-}
+      APP_DEBUG: ${APP_DEBUG:-0}
     env_file:
       - .env
       - .env.local

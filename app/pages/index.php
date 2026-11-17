@@ -1,71 +1,34 @@
 <?php
-require LCY_ROOT . 'vendor/autoload.php';
+require LCY_ROOT . 'inc/view.php';
 require LCY_ROOT . 'inc/func.page.php';
+require LCY_ROOT . 'inc/archive.php';
 
-$loader = new \Twig\Loader\FilesystemLoader(LCY_ROOT . 'twig');
-$twig   = new \Twig\Environment($loader, [
-    'cache'       => LCY_ROOT . 'cache',
-    'auto_reload' => true, //根据文件更新时间，自动更新缓存
-    'debug'       => true,
+$page    = request_int('page', 1, 1, 100000);
+$perPage = request_int('per_page', 10, 1, 50);
+$total   = archive_count();
+
+$classPage = new page([
+    'total'     => $total,
+    'now_index' => $page,
+    'per_page'  => $perPage,
+    'pageName'  => 'page',
+    'url'       => '/?',
+    'rewrite'   => false,
 ]);
-$twigFile = 'home.twig';
+$list = archive_list((int) $classPage->offset, $perPage);
 
-// 业务代码开始 ======>
-
-$page     = isset($page) ? intval($page) : 1;
-$page     = $page > 0 ? $page : 1;
-$per_page = isset($per_page) ? intval($per_page) : 10;
-$prevPage = $page - 1;
-$nextPage = $page + 1;
-
-// 统计数量
-$countSql         = 'select count(*) as num from archive';
-$total            = 0;
-$totalMemCacheKey = get_sql_md5($countSql, []);
-if ($onMemCache == false || ! ($total = $memCache->get($totalMemCacheKey))) {
-    $total = $db->single($countSql);
-    $onMemCache && $memCache->set($totalMemCacheKey, $total, 0, 86400);
-}
-
-// 分页设置
-$classPage = new page(['total' => $total, 'now_index' => $page, 'per_page' => $per_page, 'pageName' => 'page', 'url' => '/?', 'rewrite' => false]);
-$limitLeft = $classPage->offset;
-$pages     = $classPage->show(4);
-
-// 列表数据
-$order       = ' order by c_id desc';
-$limit       = ' limit ' . $limitLeft . ', ' . $per_page;
-$params      = [];
-$sql         = 'SELECT * FROM archive' . $order . $limit;
-$memCacheKey = get_sql_md5($sql, $params);
-$list        = [];
-if ($onMemCache == false || ! ($list = $memCache->get($memCacheKey))) {
-    $list = $db->query($sql, $params);
-    $onMemCache && $memCache->set($memCacheKey, $list, 0, 86400);
-}
-
-$seo = [
-    'title'   => '首页',
-    'keyword' => '首页',
-    'desc'    => '首页',
-];
-
-$twigData = [
-    'global' => $global,
+render_page('home.twig', [
+    'global' => view_global(),
     'router' => $routeVars,
-    'seo'    => $seo,
+    'seo'    => [
+        'title'   => '首页',
+        'keyword' => '首页',
+        'desc'    => '首页',
+    ],
     'total'  => $total,
     'list'   => $list,
     'page'   => $page,
-    'pages'  => $pages,
-];
-
-// <=========== 业务代码结束
-
-echo $twig->render($twigFile, $twigData);
-$db->CloseConnection();
-if ($onMemCache && $memCache) {
-    $memCache->close();
-}
-
-exit();
+    'pages'  => $classPage->show(4),
+]);
+release_resources();
+exit;

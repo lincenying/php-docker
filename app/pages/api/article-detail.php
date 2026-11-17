@@ -1,39 +1,26 @@
 <?php
 require 'api-header.php';
-require LCY_ROOT . 'inc/func.ubb.php';
+require LCY_ROOT . 'inc/archive.php';
 
-$id = isset($id) ? intval($id) : $routeVars['id'];
-
-$return = [];
-$row    = null;
+$id = route_int(isset($routeVars) && is_array($routeVars) ? $routeVars : [], 'id');
 
 try {
-    if (empty($id)) {
-        throw new Exception('ID不能为空');
+    if ($id < 1) {
+        throw new RuntimeException('ID不能为空');
     }
-    // 详情数据
-    $params      = [$id];
-    $sql         = 'SELECT * FROM archive where c_id = ?';
-    $memCacheKey = get_sql_md5($sql, $params);
-    if ($onMemCache == false || ! ($row = $memCache->get($memCacheKey))) {
-        $row = $db->row($sql, $params);
-        $onMemCache && $memCache->set($memCacheKey, $row, 0, 86400);
+    $row = archive_row($id);
+    if ($row === null) {
+        throw new RuntimeException('没有找到该文章');
     }
-    if (empty($row)) {
-        throw new Exception('没有找到该文章');
-    }
-
-    $ubb = new Ubb();
-    $ubb->setString($row['c_content']);
-    $row['c_content'] = $ubb->parse();
-
-    $return['code'] = 200;
-    $return['data'] = $row;
+    $row['c_content'] = archive_html($row);
+    json_response([
+        'code' => 200,
+        'data' => $row,
+    ]);
 } catch (Exception $e) {
-    $return['code'] = 300;
-    $return['data'] = null;
-    $return['msg']  = $e->getMessage();
+    json_response([
+        'code' => 300,
+        'data' => null,
+        'msg'  => public_error_message($e),
+    ]);
 }
-
-$jsonStr = json_encode($return, JSON_UNESCAPED_UNICODE);
-echo $jsonStr;

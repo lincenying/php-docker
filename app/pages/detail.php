@@ -1,60 +1,27 @@
 <?php
-require LCY_ROOT . 'vendor/autoload.php';
-require LCY_ROOT . 'inc/func.ubb.php';
+require LCY_ROOT . 'inc/view.php';
+require LCY_ROOT . 'inc/archive.php';
 
-$loader = new \Twig\Loader\FilesystemLoader(LCY_ROOT . 'twig');
-$twig   = new \Twig\Environment($loader, [
-    'cache'       => LCY_ROOT . 'cache',
-    'auto_reload' => true, //根据文件更新时间，自动更新缓存
-    'debug'       => true,
-]);
-$twigFile = 'detail.twig';
-
-// 业务代码开始 ======>
-
-$id = isset($id) ? intval($id) : $routeVars['id'];
-if (empty($id)) {
-    exit('参数错误');
+$id  = route_int(isset($routeVars) && is_array($routeVars) ? $routeVars : [], 'id');
+$row = archive_row($id);
+if ($row === null) {
+    http_response_code(404);
+    render_404('没有找到这篇文章。');
 }
 
-// 详情数据
-$params      = [$id];
-$sql         = 'SELECT * FROM archive where c_id = ?';
-$memCacheKey = get_sql_md5($sql, $params);
-$row         = [];
-if ($onMemCache == false || ! ($row = $memCache->get($memCacheKey))) {
-    $row = $db->row($sql, $params);
-    $onMemCache && $memCache->set($memCacheKey, $row, 0, 86400);
-}
+$title            = (string) ($row['c_title'] ?? '详情');
+$row['c_content'] = archive_html($row);
 
-$ubb = new Ubb();
-$ubb->setString($row['c_content'] . ($row['c_down'] ?? '') . '   https://v3.cn.vuejs.org/api/composition-api.html');
-$row['c_content'] = $ubb->parse();
-
-$listPage = isset($page) ? intval($page) : 1;
-$listPage = $listPage > 0 ? $listPage : 1;
-
-$seo = [
-    'title'   => $row['c_title'],
-    'keyword' => $row['c_title'],
-    'desc'    => $row['c_title'],
-];
-
-$twigData = [
-    'global'   => $global,
-    'router'   => $routeVars,
-    'seo'      => $seo,
+render_page('detail.twig', [
+    'global'   => view_global(),
+    'router'   => $routeVars ?? [],
+    'seo'      => [
+        'title'   => $title,
+        'keyword' => $title,
+        'desc'    => $title,
+    ],
     'row'      => $row,
-    'listPage' => $listPage,
-];
-
-// <=========== 业务代码结束
-
-echo $twig->render($twigFile, $twigData);
-
-$db->CloseConnection();
-if ($onMemCache && $memCache) {
-    $memCache->close();
-}
-
-exit();
+    'listPage' => request_int('page', 1, 1, 100000),
+]);
+release_resources();
+exit;

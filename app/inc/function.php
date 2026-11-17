@@ -2,21 +2,152 @@
 if (isset($_REQUEST['GLOBALS']) || isset($_FILES['GLOBALS'])) {
     exit('Access Error');
 }
-foreach (['_COOKIE', '_GET', '_POST'] as $_request) {
-    foreach ($$_request as $_key => $_value) {
-        if (! is_string($_key) || $_key === '' || $_key[0] === '_') {
-            continue;
-        }
-        $$_key = $_value;
-    }
+
+function app_debug(): bool
+{
+    $value = getenv('APP_DEBUG');
+    return $value === '1' || $value === 'true';
 }
 
-// php7
-if (! function_exists('ereg')) {
-    function ereg($pattern, $subject, &$matches = [])
-    {
-        return preg_match('/' . $pattern . '/', $subject, $matches);
+function env_string(string $key, string $default = ''): string
+{
+    $value = getenv($key);
+    if ($value === false || $value === '') {
+        return $default;
     }
+    return $value;
+}
+
+function request_value(string $key)
+{
+    if (isset($_GET[$key]) && ! is_array($_GET[$key])) {
+        return $_GET[$key];
+    }
+    if (isset($_POST[$key]) && ! is_array($_POST[$key])) {
+        return $_POST[$key];
+    }
+    return null;
+}
+
+function request_int(string $key, int $default, int $min, int $max): int
+{
+    $raw = request_value($key);
+    if ($raw === null || $raw === '' || ! preg_match('/^-?\d+$/', (string) $raw)) {
+        return $default;
+    }
+    $value = (int) $raw;
+    if ($value < $min) {
+        return $min;
+    }
+    if ($value > $max) {
+        return $max;
+    }
+    return $value;
+}
+
+function route_int(array $routeVars, string $key, int $default = 0): int
+{
+    if (isset($routeVars[$key]) && is_scalar($routeVars[$key]) && preg_match('/^\d+$/', (string) $routeVars[$key])) {
+        return (int) $routeVars[$key];
+    }
+    return request_int($key, $default, 0, 1000000000);
+}
+
+function json_response(array $payload, int $status = 200): void
+{
+    if (! headers_sent()) {
+        http_response_code($status);
+        header('Content-Type: application/json; charset=utf-8');
+    }
+    $json = json_encode($payload, JSON_UNESCAPED_UNICODE);
+    echo $json === false ? '{"code":500,"data":null,"msg":"响应编码失败"}' : $json;
+}
+
+function public_error_message(Throwable $e, string $fallback = '请求失败'): string
+{
+    $message = trim($e->getMessage());
+    if ($message === '' || str_contains($message, 'SQLSTATE') || str_contains($message, 'Stack trace')) {
+        return $fallback;
+    }
+    return $message;
+}
+
+function cors_origin_allowed(string $origin): bool
+{
+    $parts = parse_url($origin);
+    if (! is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
+        return false;
+    }
+    $scheme = strtolower((string) $parts['scheme']);
+    if ($scheme !== 'http' && $scheme !== 'https') {
+        return false;
+    }
+    $host = strtolower((string) $parts['host']);
+    if ($host === 'localhost' || $host === '127.0.0.1' || $host === 'mmxiaowu.com' || str_ends_with($host, '.mmxiaowu.com')) {
+        return true;
+    }
+    $extra = env_string('CORS_ORIGINS');
+    if ($extra === '') {
+        return false;
+    }
+    foreach (explode(',', $extra) as $item) {
+        if (strcasecmp(trim($item), $origin) === 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function upload_authorized(): bool
+{
+    $expected = env_string('UPLOAD_TOKEN');
+    if ($expected === '') {
+        return false;
+    }
+    $given = '';
+    if (isset($_POST['token']) && is_string($_POST['token'])) {
+        $given = $_POST['token'];
+    }
+    $authorization = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    if ($given === '' && is_string($authorization) && preg_match('/Bearer\s+(\S+)/i', $authorization, $matches)) {
+        $given = $matches[1];
+    }
+    return $given !== '' && hash_equals($expected, $given);
+}
+
+function image_extension(string $filename): string
+{
+    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    $map = [
+        'jpg'  => 'jpg',
+        'jpeg' => 'jpg',
+        'png'  => 'png',
+        'gif'  => 'gif',
+        'webp' => 'webp',
+    ];
+    return $map[$ext] ?? '';
+}
+
+function is_uploaded_image(string $tmp, string $filename): bool
+{
+    if ($tmp === '' || ! is_uploaded_file($tmp)) {
+        return false;
+    }
+    $ext = image_extension($filename);
+    if ($ext === '') {
+        return false;
+    }
+    $info = @getimagesize($tmp);
+    if ($info === false) {
+        return false;
+    }
+    $types = [
+        IMAGETYPE_JPEG => 'jpg',
+        IMAGETYPE_PNG  => 'png',
+        IMAGETYPE_GIF  => 'gif',
+        IMAGETYPE_WEBP => 'webp',
+    ];
+    return ($types[$info[2]] ?? '') === $ext;
 }
 
 ############# check #################
@@ -26,7 +157,7 @@ if (! function_exists('ereg')) {
  */
 function check_email($inAddress)
 {
-    return ereg('^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(\.[a-zA-Z0-9_-])+', $inAddress);
+    return is_string($inAddress) && filter_var($inAddress, FILTER_VALIDATE_EMAIL) !== false;
 }
 
 /**
@@ -35,7 +166,7 @@ function check_email($inAddress)
 function check_file_type($str)
 {
     $tmpfiletype = false;
-    $filetypes   = 'jpg,gif,png,jpeg';
+    $filetypes   = 'jpg,gif,png,jpeg,webp';
     $filetype_   = explode(',', $filetypes);
     for ($i = 0; $i < count($filetype_); $i++) {
         if (strtolower($str) == $filetype_[$i]) {
@@ -51,7 +182,7 @@ function check_file_type($str)
  */
 function check_spider()
 {
-    $useragent = agent();
+    $useragent = get_agent();
     if ($useragent['browser'] == 'Null' && $useragent['os'] == 'Null') {
         $return = 'null';
     } elseif ($useragent['os'] == 'Spiders') {
@@ -76,7 +207,7 @@ function _is_empty($str)
  */
 function _is_int($str)
 {
-    return ereg('^[0-9]{0,}$', $str);
+    return is_scalar($str) && preg_match('/^[0-9]+$/', (string) $str) === 1;
 }
 
 /**
@@ -95,7 +226,7 @@ function is_pjax()
 function get_agent()
 {
     $visitor          = [];
-    $visitor['agent'] = $_SERVER['HTTP_USER_AGENT'];
+    $visitor['agent'] = (string) ($_SERVER['HTTP_USER_AGENT'] ?? '');
     if (strpos($visitor['agent'], 'Netscape') !== false) {
         $visitor['browser'] = 'Netscape';
     } elseif (strpos($visitor['agent'], 'Lynx') !== false) {
@@ -191,7 +322,7 @@ function get_date_diff($unit, $date1, $date2)
             $div = 2592000;
             break;
         case 'y':
-            $div = 946080000;
+            $div = 31536000;
             break;
         default:
             $div = 86400;
@@ -245,24 +376,20 @@ function get_img_from_content($content)
  */
 function get_ip()
 {
-    if (getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
-        $ip = getenv('HTTP_CLIENT_IP');
-    } elseif (getenv('HTTP_X_FORWARDED_FOR') && strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')) {
-        $ip = getenv('HTTP_X_FORWARDED_FOR');
-    } elseif (getenv('REMOTE_ADDR') && strcasecmp(getenv('REMOTE_ADDR'), 'unknown')) {
-        $ip = getenv('REMOTE_ADDR');
-    } elseif (isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] && strcasecmp($_SERVER['REMOTE_ADDR'], 'unknown')) {
-        $ip = $_SERVER['REMOTE_ADDR'];
-    } elseif (isset($_SERVER['X-Real-IP']) && $_SERVER['X-Real-IP'] && strcasecmp($_SERVER['X-Real-IP'], 'unknown')) {
-        $ip = $_SERVER['X-Real-IP'];
-    } else {
-        $ip = '0.0.0.0';
+    $candidates = [];
+    if (! empty($_SERVER['HTTP_X_REAL_IP'])) {
+        $candidates[] = $_SERVER['HTTP_X_REAL_IP'];
     }
-
-    if (! preg_match('/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/', $ip)) {
-        $ip = '0.0.0.0';
+    if (! empty($_SERVER['REMOTE_ADDR'])) {
+        $candidates[] = $_SERVER['REMOTE_ADDR'];
     }
-    return $ip;
+    foreach ($candidates as $candidate) {
+        $ip = trim(explode(',', (string) $candidate)[0]);
+        if (filter_var($ip, FILTER_VALIDATE_IP)) {
+            return $ip;
+        }
+    }
+    return '0.0.0.0';
 }
 
 /**

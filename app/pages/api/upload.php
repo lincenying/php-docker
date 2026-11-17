@@ -3,43 +3,36 @@ require 'api-header.php';
 require LCY_ROOT . 'inc/func.upload.php';
 
 try {
-    $expected = getenv('UPLOAD_TOKEN');
-    $given    = isset($_POST['token']) ? (string) $_POST['token'] : '';
-    if ($given === '' && ! empty($_SERVER['HTTP_AUTHORIZATION']) && preg_match('/Bearer\s+(\S+)/i', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
-        $given = $matches[1];
+    if (env_string('UPLOAD_TOKEN') === '') {
+        throw new RuntimeException('缺少上传配置');
     }
-    if ($expected === false || $expected === '') {
-        throw new Exception('缺少上传配置');
+    if (! upload_authorized()) {
+        throw new RuntimeException('token 不正确');
     }
-    if ($given === '' || ! hash_equals($expected, $given)) {
-        throw new Exception('token 不正确');
+    if (empty($_FILES['file']) || ! is_array($_FILES['file'])) {
+        throw new RuntimeException('文件不能为空');
     }
-    if (empty($_FILES['file'])) {
-        throw new Exception('文件不能为空');
+    $upload = new upload([
+        'files'       => $_FILES['file'],
+        'isSmall'     => 0,
+        'isMark'      => 0,
+        'waterText'   => '',
+        'isResize'    => 0,
+        'filepath'    => '',
+        'attaMaxSize' => 5 * 1024 * 1024,
+    ]);
+    $data = $upload->upMore();
+    if (! is_array($data) || ($data['err_msg'] ?? '') !== '') {
+        throw new RuntimeException((string) ($data['err_msg'] ?? '文件上传失败'));
     }
-    $config = [
-        'files'     => $_FILES['file'],
-        'isSmall'   => 0,
-        'isMark'    => 0,
-        'waterText' => 'test',
-        'isResize'  => 0,
-        'filepath'  => '',
-    ];
-    $upload = new upload($config);
-    $data   = $upload->upMore();
-    $return = [];
-    if ($data['err_msg'] === '') {
-        $return['code'] = 200;
-        $return['data'] = $data;
-    } else {
-        throw new Exception($data['err_msg']);
-    }
-
+    json_response([
+        'code' => 200,
+        'data' => $data,
+    ]);
 } catch (Exception $e) {
-    $return['code'] = 300;
-    $return['data'] = null;
-    $return['msg']  = $e->getMessage();
+    json_response([
+        'code' => 300,
+        'data' => null,
+        'msg'  => public_error_message($e),
+    ]);
 }
-
-$jsonStr = json_encode($return, JSON_UNESCAPED_UNICODE);
-echo $jsonStr;

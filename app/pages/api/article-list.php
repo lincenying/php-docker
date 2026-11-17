@@ -1,30 +1,20 @@
 <?php
 require 'api-header.php';
+require LCY_ROOT . 'inc/archive.php';
 
-$page  = isset($page) ? intval($page) : 1;
-$limit = isset($limit) ? intval($limit) : 10;
+$page  = request_int('page', 1, 1, 100000);
+$limit = request_int('limit', 10, 1, 50);
 
-$return = [];
 try {
-    // 列表数据
-    $order       = ' order by c_id desc';
-    $limitLeft   = ($page - 1) * $limit;
-    $limitStr    = ' limit ' . $limitLeft . ', ' . $limit;
-    $params      = [];
-    $sql         = 'SELECT * FROM archive' . $order . $limitStr;
-    $memCacheKey = get_sql_md5($sql, $params);
-    $list        = [];
-    if ($onMemCache == false || ! ($list = $memCache->get($memCacheKey))) {
-        $list = $db->query($sql, $params);
-        $onMemCache && $memCache->set($memCacheKey, $list, 0, 86400);
-    }
-    $return['code'] = 200;
-    $return['data'] = $list;
+    $list = archive_list(($page - 1) * $limit, $limit);
+    json_response([
+        'code' => 200,
+        'data' => $list,
+    ]);
 } catch (Exception $e) {
-    $return['code'] = 300;
-    $return['data'] = null;
-    $return['msg']  = $e->getMessage();
+    json_response([
+        'code' => 300,
+        'data' => null,
+        'msg'  => public_error_message($e),
+    ]);
 }
-
-$jsonStr = json_encode($return, JSON_UNESCAPED_UNICODE);
-echo $jsonStr;

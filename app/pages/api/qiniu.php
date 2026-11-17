@@ -6,56 +6,66 @@ use Qiniu\Auth;
 use Qiniu\Storage\UploadManager;
 
 try {
-    $accessKey = getenv('QINIU_ACCESS_KEY');
-    $secretKey = getenv('QINIU_SECRET_KEY');
-    if ($accessKey === false || $accessKey === '' || $secretKey === false || $secretKey === '') {
-        throw new Exception('缺少七牛配置');
+    if (env_string('UPLOAD_TOKEN') === '') {
+        throw new RuntimeException('缺少上传配置');
     }
-    $auth      = new Auth($accessKey, $secretKey);
-    $bucket    = 'default';
-    // 生成上传Token
-    $token = $auth->uploadToken($bucket);
-    // 构建 UploadManager 对象
-    $uploadMgr = new UploadManager();
-
-    if (empty($_FILES['file'])) {
-        throw new Exception('文件不能为空');
+    if (! upload_authorized()) {
+        throw new RuntimeException('token 不正确');
+    }
+    $accessKey = env_string('QINIU_ACCESS_KEY');
+    $secretKey = env_string('QINIU_SECRET_KEY');
+    if ($accessKey === '' || $secretKey === '') {
+        throw new RuntimeException('缺少七牛配置');
+    }
+    if (empty($_FILES['file']) || ! is_array($_FILES['file'])) {
+        throw new RuntimeException('文件不能为空');
     }
 
-    $file     = $_FILES['file'];
-    $filePath = $file['tmp_name'];
-    $fileName = $file['name'];
+    $file = $_FILES['file'];
+    $tmp  = (string) ($file['tmp_name'] ?? '');
+    $name = (string) ($file['name'] ?? '');
+    $size = (int) ($file['size'] ?? 0);
+    if ($size < 1 || $size > 5 * 1024 * 1024 || ! is_uploaded_image($tmp, $name)) {
+        throw new RuntimeException('文件类型不允许');
+    }
 
-    $nowDate     = date('YmdHis');
-    $rondomStr   = get_random_str(8, 'Aa');
-    $ext         = explode('.', $fileName);
-    $fileExt     = $ext[count($ext) - 1];
-    $myFile      = $nowDate . '_' . $rondomStr;
-    $fileNewName = 'upload/' . $myFile . '.' . $fileExt;
-
-    list($ret, $err) = $uploadMgr->putFile($token, $fileNewName, $filePath);
-
+    $ext         = image_extension($name);
+    $fileNewName = 'upload/' . date('YmdHis') . '_' . get_random_str(8, 'Aa') . '.' . $ext;
+    $bucket      = env_string('QINIU_BUCKET', 'default');
+    $domain      = rtrim(env_string('QINIU_DOMAIN', 'http://cdn.mmxiaowu.com'), '/');
+    $auth        = new Auth($accessKey, $secretKey);
+    $token       = $auth->uploadToken($bucket);
+    $uploadMgr   = new UploadManager();
+    [$ret, $err] = $uploadMgr->putFile($token, $fileNewName, $tmp);
     if ($err) {
-        throw new Exception($err);
-    } else {
-        $return['code'] = 200;
-        $return['data'] = [
+        $message = '上传失败';
+        if (is_object($err) && method_exists($err, 'message')) {
+            $message = (string) $err->message();
+        } elseif (is_string($err) && $err !== '') {
+            $message = $err;
+        }
+        throw new RuntimeException($message !== '' ? $message : '上传失败');
+    }
+
+    $key = is_array($ret) ? (string) ($ret['key'] ?? $fileNewName) : $fileNewName;
+    $url = $domain . '/' . ltrim($key, '/');
+    json_response([
+        'code' => 200,
+        'data' => [
             'err_msg'   => '',
-            'imgurl'    => 'http://cdn.mmxiaowu.com/' . $ret['key'],
+            'imgurl'    => $url,
             'smallurl'  => '',
             'markurl'   => '',
             'resizeimg' => '',
             'fileText'  => '',
-            'filepath'  => 'http://cdn.mmxiaowu.com/' . $ret['key'],
-            'oldurl'    => $fileName,
-        ];
-    }
-
+            'filepath'  => $url,
+            'oldurl'    => $name,
+        ],
+    ]);
 } catch (Exception $e) {
-    $return['code'] = 300;
-    $return['data'] = null;
-    $return['msg']  = $e->getMessage();
+    json_response([
+        'code' => 300,
+        'data' => null,
+        'msg'  => public_error_message($e),
+    ]);
 }
-
-$jsonStr = json_encode($return, JSON_UNESCAPED_UNICODE);
-echo $jsonStr;

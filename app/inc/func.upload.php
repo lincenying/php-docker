@@ -5,7 +5,8 @@ class upload
     //S=================图片上传参数===================
     private $files       = '';
     private $fileNum     = 0;       //上传文件数量
-    private $filePath    = '';      //附件上传路径
+    private $filePath    = '';      //附件上传绝对路径
+    private $publicPath  = '';      //返回给调用方的相对路径
     private $fileText    = '';      //附件说明
     private $attaMaxSize = 1024000; //附件大小限制
     private $nowDate     = '';
@@ -44,11 +45,15 @@ class upload
         if (! empty($initArray['files'])) {
             $this->files = $initArray['files'];
         }
+        $relative = 'upload/' . date('Ym') . '/';
         if (! empty($initArray['filepath'])) {
-            $this->filePath = $initArray['filepath'];
-        } else {
-            $this->filePath = 'upload/' . date('Ym') . '/';
+            $candidate = str_replace('\\', '/', trim((string) $initArray['filepath']));
+            if ($candidate !== '' && ! str_contains($candidate, '..') && ! str_starts_with($candidate, '/')) {
+                $relative = rtrim($candidate, '/') . '/';
+            }
         }
+        $this->publicPath = $relative;
+        $this->filePath   = LCY_ROOT . $relative;
         if (! empty($initArray['fileText'])) {
             $this->fileText = $initArray['fileText'];
         }
@@ -409,19 +414,21 @@ class upload
 
     private function creatName($thisFileName)
     {
-        $ext     = explode('.', $thisFileName);
-        $fileExt = $ext[count($ext) - 1];
-        //重新定义文件名;
-        $while  = 1;
-        $return = '';
-        while ($while > 0) {
-            $rondomStr   = get_random_str(8, 'Aa');
-            $myFile      = $this->nowDate . '_' . $rondomStr;
-            $fileNewName = $myFile . '.' . $fileExt;
-            $filename    = $this->filePath . $fileNewName;
-            if (! file_exists($filename)) {
-                $while  = 0;
-                $return = [
+        $fileExt = image_extension((string) $thisFileName);
+        if ($fileExt === '') {
+            return [
+                'type' => '',
+                'file' => '',
+            ];
+        }
+        $return = [
+            'type' => '',
+            'file' => '',
+        ];
+        for ($i = 0; $i < 5; $i++) {
+            $fileNewName = $this->nowDate . '_' . get_random_str(8, 'Aa') . '.' . $fileExt;
+            if (! file_exists($this->filePath . $fileNewName)) {
+                return [
                     'type' => $fileExt,
                     'file' => $fileNewName,
                 ];
@@ -432,177 +439,120 @@ class upload
 
     private function createDir($dir)
     {
-        if (! is_dir(LCY_ROOT . $dir)) {
-            @mkdir(LCY_ROOT . $dir);
+        if ($dir === '' || is_dir($dir)) {
+            return;
         }
+        mkdir($dir, 0755, true);
+    }
+
+    private function emptyUpload(string $message, string $oldName = ''): array
+    {
+        return [
+            'err_msg'   => $message,
+            'imgurl'    => '',
+            'smallurl'  => '',
+            'markurl'   => '',
+            'resizeimg' => '',
+            'fileText'  => '',
+            'filepath'  => '',
+            'oldurl'    => $oldName,
+        ];
+    }
+
+    private function storeOne(string $tmp, string $name, int $size, $fileText): array
+    {
+        if ($size > $this->attaMaxSize) {
+            return $this->emptyUpload('文件大小超出限制(' . $this->attaMaxSize . '字节)', $name);
+        }
+        if (! is_uploaded_image($tmp, $name)) {
+            return $this->emptyUpload('文件类型不允许', $name);
+        }
+        $newFileName = $this->creatName($name);
+        if ($newFileName['file'] === '') {
+            return $this->emptyUpload('文件类型不允许', $name);
+        }
+        $fileNewName = $newFileName['file'];
+        $this->createDir($this->filePath);
+        if (! move_uploaded_file($tmp, $this->filePath . $fileNewName)) {
+            return $this->emptyUpload('文件上传失败', $name);
+        }
+
+        $newSmallImg = '';
+        $newMark     = '';
+        $newResize   = '';
+        if ($this->isSmall == 1) {
+            $this->createDir($this->filePath . $this->smallFolder);
+            $newSmallImg = $this->smallImg($fileNewName) ?: '';
+        }
+        if ($this->isMark == 1) {
+            $this->createDir($this->filePath . $this->markFolder);
+            $newMark = $this->waterMark($fileNewName) ?: '';
+        }
+        if ($this->isResize == 1) {
+            $this->createDir($this->filePath . $this->resizeFolder);
+            $newResize = $this->myImageResize($fileNewName) ?: '';
+        }
+
+        $text = is_string($fileText) ? trim($fileText) : '';
+        if ($text === '') {
+            $text = $name;
+        }
+        return [
+            'err_msg'   => '',
+            'imgurl'    => $fileNewName,
+            'smallurl'  => $newSmallImg,
+            'markurl'   => $newMark,
+            'resizeimg' => $newResize,
+            'fileText'  => $text,
+            'filepath'  => $this->publicPath . $fileNewName,
+            'oldurl'    => $name,
+        ];
     }
 
     public function upMore()
     {
         $thisFiles = $this->files;
-        if (! is_array($thisFiles['tmp_name'])) {
-            $arr_return = [];
-            if ($thisFiles['size'] <= $this->attaMaxSize) {
-                if (is_uploaded_file($thisFiles['tmp_name'])) {
-                    $newFileName = $this->creatName($thisFiles['name']);
-                    $fileNewName = $newFileName['file'];
-                    $filePath    = $this->filePath . $fileNewName;
-                    $this->createDir($this->filePath);
-                    if (move_uploaded_file($thisFiles['tmp_name'], $filePath)) {
-                        if ($this->isSmall == 1) {
-                            $smallpath = $this->filePath . $this->smallFolder;
-                            $this->createDir($smallpath);
-                            $newSmallImg = $this->smallImg($fileNewName);
-                        }
-                        if ($this->isMark == 1) {
-                            $markpath = $this->filePath . $this->markFolder;
-                            $this->createDir($markpath);
-                            $newMark = $this->waterMark($fileNewName);
-                        }
-                        if ($this->isResize == 1) {
-                            $resizePath = $this->filePath . $this->resizeFolder;
-                            $this->createDir($resizePath);
-                            $newResize = $this->myImageResize($fileNewName);
-                        }
-
-                        if (is_array($this->fileText)) {
-                            $tmpFileText = $this->fileText[0];
-                        } else {
-                            $tmpFileText = $this->fileText;
-                        }
-                        if (empty($tmpFileText) || ! isset($tmpFileText) || $tmpFileText == '') {
-                            $tmpFileText = $thisFiles['name'];
-                            $tmpFileText = mb_convert_encoding($tmpFileText, 'GBK', 'UTF-8');
-                        }
-
-                        $arr_return = [
-                            'err_msg'   => '',
-                            'imgurl'    => $fileNewName,
-                            'smallurl'  => $newSmallImg,
-                            'markurl'   => $newMark,
-                            'resizeimg' => $newResize,
-                            'fileText'  => $tmpFileText,
-                            'filepath'  => $filePath,
-                            'oldurl'    => $thisFiles['name'],
-                        ];
-                        $tmpFileText = '';
-                    } else {
-                        $arr_return = [
-                            'err_msg'   => '文件上传失败',
-                            'imgurl'    => $fileNewName,
-                            'smallurl'  => '',
-                            'markurl'   => '',
-                            'resizeimg' => '',
-                            'fileText'  => '',
-                            'filepath'  => '',
-                            'oldurl'    => $thisFiles['name'],
-                        ];
-                    }
-                } else {
-                    $arr_return = [
-                        'err_msg' => '文件上传失败',
-                    ];
-                } // end if
-            } else {
-                $arr_return = [
-                    'err_msg' => '文件大小超出限制(' . $this->attaMaxSize . '字节)',
-                ];
-            } // end if
-        } else {
-            $i      = 0;
-            $maxNum = $this->fileNum;
-            if (! $maxNum) {
-                $maxNum = count($thisFiles['tmp_name']);
-            }
-            $arr_return = [];
-            while ($i <= $maxNum) {
-                if ($thisFiles['size'][$i] <= $this->attaMaxSize) {
-                    if (is_uploaded_file($thisFiles['tmp_name'][$i])) {
-                        $newFileName = $this->creatName($thisFiles['name'][$i]);
-                        $fileNewName = $newFileName['file'];
-                        $filePath    = $this->filePath . $fileNewName;
-                        $this->createDir($filePath);
-                        if (move_uploaded_file($thisFiles['tmp_name'][$i], $filePath)) {
-                            if ($this->isSmall == 1) {
-                                $smallpath = $this->filePath . $this->smallFolder;
-                                $this->createDir($smallpath);
-                                $newSmallImg = $this->smallImg($fileNewName);
-                            }
-                            if ($this->isMark == 1) {
-                                $markpath = $this->filePath . $this->markFolder;
-                                $this->createDir($markpath);
-                                $newMark = $this->waterMark($fileNewName);
-                            }
-                            if ($this->isResize == 1) {
-                                $resizePath = $this->filePath . $this->resizeFolder;
-                                $this->createDir($resizePath);
-                                $newResize = $this->myImageResize($fileNewName);
-                            }
-
-                            if (is_array($this->fileText)) {
-                                $tmpFileText = $this->fileText[$i - 1];
-                            }
-                            if (empty($tmpFileText) || ! isset($tmpFileText) || $tmpFileText == '') {
-                                $tmpFileText = $thisFiles['name'][$i];
-                            }
-
-                            $arr_return[] = [
-                                'imgurl'    => $fileNewName,
-                                'smallurl'  => $newSmallImg,
-                                'markurl'   => $newMark,
-                                'resizeimg' => $newResize,
-                                'fileText'  => $tmpFileText,
-                                'filepath'  => $filePath,
-                                'oldurl'    => $thisFiles['name'][$i],
-                            ];
-                            $tmpFileText = '';
-                        } else {
-                            $arr_return[] = [
-                                'err_msg' => '文件上传失败',
-                            ];
-                        }
-                    } else {
-                        $arr_return[] = [
-                            'err_msg' => '文件上传失败',
-                        ];
-                    } // end if
-                } else {
-                    $arr_return[] = [
-                        'err_msg' => '文件大小超出限制(' . $this->attaMaxSize . '字节)',
-                    ];
-                } // end if
-                $i++;
-            } // end while
+        if (! is_array($thisFiles) || ! isset($thisFiles['tmp_name'])) {
+            return $this->emptyUpload('文件不能为空');
         }
-        return $arr_return;
+        if (! is_array($thisFiles['tmp_name'])) {
+            $text = is_array($this->fileText) ? (string) ($this->fileText[0] ?? '') : $this->fileText;
+            return $this->storeOne(
+                (string) $thisFiles['tmp_name'],
+                (string) ($thisFiles['name'] ?? ''),
+                (int) ($thisFiles['size'] ?? 0),
+                $text
+            );
+        }
+
+        $count  = count($thisFiles['tmp_name']);
+        $maxNum = $this->fileNum > 0 ? min((int) $this->fileNum, $count) : $count;
+        $result = [];
+        for ($i = 0; $i < $maxNum; $i++) {
+            $text = '';
+            if (is_array($this->fileText)) {
+                $text = (string) ($this->fileText[$i] ?? '');
+            }
+            $result[] = $this->storeOne(
+                (string) ($thisFiles['tmp_name'][$i] ?? ''),
+                (string) ($thisFiles['name'][$i] ?? ''),
+                (int) ($thisFiles['size'][$i] ?? 0),
+                $text
+            );
+        }
+        return $result;
     }
+
     public function upOne()
     {
-        $return = [];
-        if ($this->files['name']) {
-            $extArr  = explode('.', $this->files['name']);
-            $fileExt = $extArr[count($extArr) - 1];
-
-            if (! check_file_type($fileExt)) {
-                $return['err_msg'] = '文件类型不允许';
-            } elseif (ceil($this->files['size']) > $this->attaMaxSize) {
-                $return['err_msg'] = '文件大小超出!';
-            } else {
-                //重新定义文件名;
-                $rondomStr   = get_random_str(8, 'Aa');
-                $myFile      = $this->nowDate . '_' . $rondomStr;
-                $fileNewName = $myFile . '.' . $fileExt;
-                $fileName    = $this->filePath . $fileNewName;
-
-                $nowDatetime = date('YmdHIS');
-                if (copy($this->files['tmp_name'], $fileName)) {
-                    unlink($this->files['tmp_name']);
-                    $return['filepath'] = $fileName;
-                } else {
-                    $return['err_msg'] = '文件上传失败!';
-                }
-            }
-            return $return;
+        if (empty($this->files['name']) || empty($this->files['tmp_name'])) {
+            return ['err_msg' => '文件不能为空'];
         }
+        return $this->storeOne(
+            (string) $this->files['tmp_name'],
+            (string) $this->files['name'],
+            (int) ($this->files['size'] ?? 0),
+            $this->fileText
+        );
     }
 }

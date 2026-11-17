@@ -4,7 +4,7 @@
     <div class="not-found">
         <p class="kicker">404</p>
         <h1>404 not found</h1>
-        <p class="page-meta">这个地址没有对应的页面。</p>
+        <p class="page-meta">{{ message|default('这个地址没有对应的页面。') }}</p>
         <a class="button" href="/">返回列表</a>
     </div>
 {% endblock %}

@@ -50,19 +50,34 @@ class DB
      *    3. Tries to connect to the database.
      *    4. If connection failed, exception is displayed and a log file gets created.
      */
+    private function envOr(string $key, string $default): string
+    {
+        $value = getenv($key);
+        if ($value === false || $value === '') {
+            return $default;
+        }
+        return $value;
+    }
+
     private function Connect()
     {
-        $this->settings = parse_ini_file(__DIR__ . '/settings.ini.php');
-        $host           = getenv('DB_HOST') ?? $this->settings['host'];         // 从环境变量获取主机名（db）
-        $dbname         = getenv('DB_DATABASE') ?? $this->settings['dbname'];   // 数据库名（mmfblog_v2）
-        $user           = getenv('DB_USERNAME') ?? $this->settings['user'];     // 用户名（user）
-        $pass           = getenv('DB_PASSWORD') ?? $this->settings['password']; // 密码（password）
-        $port           = getenv('DB_PORT') ?: 3306;                            // 端口号
-        $dsn            = 'mysql:dbname=' . $dbname . ';host=' . $host . '';
+        $settings = parse_ini_file(__DIR__ . '/settings.ini.php');
+        if (! is_array($settings)) {
+            $settings = [];
+        }
+        $this->settings = $settings;
+        $host           = $this->envOr('DB_HOST', (string) ($settings['host'] ?? '127.0.0.1'));
+        $dbname         = $this->envOr('DB_DATABASE', (string) ($settings['dbname'] ?? ''));
+        $user           = $this->envOr('DB_USERNAME', (string) ($settings['user'] ?? ''));
+        $pass           = $this->envOr('DB_PASSWORD', (string) ($settings['password'] ?? ''));
+        $port           = $this->envOr('DB_PORT', '3306');
+        if (! preg_match('/^\d+$/', $port)) {
+            $port = '3306';
+        }
+        $dsn = 'mysql:host=' . $host . ';port=' . $port . ';dbname=' . $dbname . ';charset=utf8mb4';
         try {
-            # Read settings from INI file, set UTF8
             $this->pdo = new PDO($dsn, $user, $pass, [
-                PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
+                PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4',
             ]);
 
             # 我们现在可以记录致命错误的任何异常。
@@ -74,9 +89,7 @@ class DB
             # 连接成功，将布尔值设置为真。
             $this->bConnected = true;
         } catch (PDOException $e) {
-            # Write into log
-            echo $this->ExceptionLog($e->getMessage());
-            die();
+            $this->fail($e->getMessage());
         }
     }
     /*
@@ -133,9 +146,8 @@ class DB
             # 执行SQL
             $this->sQuery->execute();
         } catch (PDOException $e) {
-            # 写入日志并显示异常
-            echo $this->ExceptionLog($e->getMessage(), $query);
-            die();
+            $this->parameters = [];
+            $this->fail($e->getMessage(), $query);
         }
 
         # Reset the parameters
@@ -294,19 +306,16 @@ class DB
      * @param  string $sql
      * @return string
      */
-    private function ExceptionLog($message, $sql = '')
+    private function fail(string $message, string $sql = ''): void
     {
-        $exception = 'Unhandled Exception. <br />';
-        $exception .= $message;
-        $exception .= '<br /> You can find the error back in the log.';
-
-        if (! empty($sql)) {
-            # Add the Raw SQL to the Log
-            $message .= "\r\nRaw SQL : " . $sql;
+        $detail = $message;
+        if ($sql !== '') {
+            $detail .= "\r\nRaw SQL : " . $sql;
         }
-        # Write into log
-        $this->log->write($message);
-
-        return $exception;
+        $this->log->write($detail);
+        if (function_exists('app_debug') && app_debug()) {
+            throw new RuntimeException($detail);
+        }
+        throw new RuntimeException($sql !== '' ? '数据库操作失败' : '数据库连接失败');
     }
 }
