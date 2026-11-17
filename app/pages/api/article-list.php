@@ -11,7 +11,7 @@ try {
     $limitLeft   = ($page - 1) * $limit;
     $limitStr    = ' limit ' . $limitLeft . ', ' . $limit;
     $params      = [];
-    $sql         = 'SELECT * FROM cyxw_archive' . $order . $limitStr;
+    $sql         = 'SELECT * FROM archive' . $order . $limitStr;
     $memCacheKey = get_sql_md5($sql, $params);
     $list        = [];
     if ($onMemCache == false || ! ($list = $memCache->get($memCacheKey))) {

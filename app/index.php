@@ -13,11 +13,8 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
     $r->get('/', 'index');
     $r->get('/detail', 'detail');
     $r->get('/detail/{id:\d+}', 'detail');
-    $r->get('/company', 'company');
-    $r->get('/contact', 'contact');
-    $r->post('/contact/submit', 'contact');
-    $r->get('/4a/login', 'login');
-    $r->get('/4a/serviceValidate', 'serviceValidate');
+    $r->get('/archive', 'archive');
+    $r->get('/about', 'about');
     $r->get('/other', '404');
     // 分组
     $r->addGroup('/api', function (FastRoute\RouteCollector $r) {
@@ -29,7 +26,6 @@ $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) 
         $r->get('/cookies', 'api/cookies');
         $r->get('/other', 'api/other');
 
-        $r->post('/contact', 'api/contact');
         $r->post('/upload', 'api/upload');
         $r->post('/qiniu', 'api/qiniu');
         // The /{title} suffix is optional

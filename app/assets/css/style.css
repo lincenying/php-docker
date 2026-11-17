@@ -212,6 +212,25 @@ h2 {
     color: var(--color-secondary);
 }
 
+.year-block + .year-block {
+    margin-top: 36px;
+}
+
+.year-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.year-heading span {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--color-secondary);
+}
+
 .article-list {
     display: grid;
     padding: 0;

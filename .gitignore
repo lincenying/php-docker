@@ -29,3 +29,6 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw*
+app/mysql.sql
+.cursor/rules/global*.mdc
+.dsh/rules/global*.mdc

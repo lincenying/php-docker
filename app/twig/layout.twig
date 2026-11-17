@@ -25,17 +25,16 @@
 		<header class="site-header">
 			<div class="shell site-header-inner">
 				<a class="brand" href="/">
-					<span class="brand-mark" aria-hidden="true">文</span>
+					<span class="brand-mark" aria-hidden="true">笑</span>
 					<span class="brand-text">
-						<span class="brand-name">文库</span>
-						<span class="brand-kicker">Archive</span>
+						<span class="brand-name">笑一笑</span>
+						<span class="brand-kicker">Laugh</span>
 					</span>
 				</a>
 				<nav class="site-nav" aria-label="主导航">
 					<a href="/" {% if current == '/' or current starts with '/detail' %}aria-current="page"{% endif %}>列表</a>
-					<a href="/contact" {% if current starts with '/contact' %}aria-current="page"{% endif %}>表单</a>
-					<a href="/company" {% if current starts with '/company' %}aria-current="page"{% endif %}>简介</a>
-					<a href="/4a/login" {% if current starts with '/4a/login' %}aria-current="page"{% endif %}>登录</a>
+					<a href="/archive" {% if current starts with '/archive' %}aria-current="page"{% endif %}>归档</a>
+					<a href="/about" {% if current starts with '/about' %}aria-current="page"{% endif %}>关于</a>
 				</nav>
 			</div>
 		</header>
@@ -46,7 +45,7 @@
 		</main>
 		<footer class="site-footer">
 			<div class="shell">
-				<p>文库 · 文章、简介与留言</p>
+				<p>笑一笑 · 段子与归档</p>
 			</div>
 		</footer>
         <script src="https://cdn.jsdmirror.com/npm/jquery/dist/jquery.min.js"></script>

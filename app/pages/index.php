@@ -13,12 +13,13 @@ $twigFile = 'home.twig';
 // 业务代码开始 ======>
 
 $page     = isset($page) ? intval($page) : 1;
+$page     = $page > 0 ? $page : 1;
 $per_page = isset($per_page) ? intval($per_page) : 10;
 $prevPage = $page - 1;
 $nextPage = $page + 1;
 
 // 统计数量
-$countSql         = 'select count(*) as num from cyxw_archive';
+$countSql         = 'select count(*) as num from archive';
 $total            = 0;
 $totalMemCacheKey = get_sql_md5($countSql, []);
 if ($onMemCache == false || ! ($total = $memCache->get($totalMemCacheKey))) {
@@ -35,7 +36,7 @@ $pages     = $classPage->show(4);
 $order       = ' order by c_id desc';
 $limit       = ' limit ' . $limitLeft . ', ' . $per_page;
 $params      = [];
-$sql         = 'SELECT * FROM cyxw_archive' . $order . $limit;
+$sql         = 'SELECT * FROM archive' . $order . $limit;
 $memCacheKey = get_sql_md5($sql, $params);
 $list        = [];
 if ($onMemCache == false || ! ($list = $memCache->get($memCacheKey))) {
@@ -55,6 +56,7 @@ $twigData = [
     'seo'    => $seo,
     'total'  => $total,
     'list'   => $list,
+    'page'   => $page,
     'pages'  => $pages,
 ];
 

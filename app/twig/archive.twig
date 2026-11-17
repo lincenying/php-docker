@@ -1,0 +1,28 @@
+{% extends 'layout.twig' %}
+
+{% block content %}
+    <header class="page-intro">
+        <p class="kicker">归档</p>
+        <h1>按年看看</h1>
+        <p class="page-meta">{{ total }} 篇</p>
+    </header>
+    {% if groups is empty %}
+        <p class="empty">暂时没有文章。</p>
+    {% else %}
+        {% for year, items in groups %}
+            <section class="year-block">
+                <h2 class="year-heading">{{ year }}<span>{{ items|length }} 篇</span></h2>
+                <ul class="article-list">
+                    {% for val in items %}
+                        <li>
+                            <a class="article-link" href="/detail/{{ val.c_id }}">
+                                <span class="article-id">{{ val.day }}</span>
+                                <span class="article-title">{{ val.c_title }}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

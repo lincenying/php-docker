@@ -17,7 +17,7 @@ PHP 8.3 + Nginx + MySQL 8.4 的 Docker 项目。页面由 Twig 渲染，路由�
 [`.env`](.env) 提供镜像标签，会提交到仓库：
 
 ```bash
-TAG=1.26.1023
+TAG=1.26.1117
 ```
 
 数据库路径和账号放在 [`.env.local`](.env.local)（已加入 `.gitignore`）。Compose 默认只读取 `.env`，启动时需要同时指定这两个文件。
@@ -67,7 +67,7 @@ PHP 依赖在构建 `app-php` 镜像时执行 `composer install`，不需要再�
 有 [`app/mysql.sql`](app/mysql.sql) 时，它会挂到容器内 `/home/mysql/mysql.sql`，可这样导入：
 
 ```bash
-docker exec -i mysql-db-php mysql -uuser -ppassword cyxiaowu < app/mysql.sql
+docker exec -i mysql-db-php mysql -uuser -ppassword mmfblog_v2 < app/mysql.sql
 ```
 
 常用命令：
@@ -87,7 +87,6 @@ docker compose --env-file .env --env-file .env.local down
 
 - `/` 首页
 - `/detail/{id}` 文章详情
-- `/company`、`/contact`
-- `/4a/login`、`/4a/serviceValidate`
+- `/archive` 归档、`/about` 关于
 - `/api/article/list`、`/api/article/lists`、`/api/article/detail`
-- `POST /api/contact`、`/api/upload`、`/api/qiniu`
+- `POST /api/upload`、`/api/qiniu`

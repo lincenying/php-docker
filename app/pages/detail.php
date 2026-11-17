@@ -19,7 +19,7 @@ if (empty($id)) {
 
 // 详情数据
 $params      = [$id];
-$sql         = 'SELECT * FROM cyxw_archive where c_id = ?';
+$sql         = 'SELECT * FROM archive where c_id = ?';
 $memCacheKey = get_sql_md5($sql, $params);
 $row         = [];
 if ($onMemCache == false || ! ($row = $memCache->get($memCacheKey))) {
@@ -31,6 +31,9 @@ $ubb = new Ubb();
 $ubb->setString($row['c_content'] . ($row['c_down'] ?? '') . '   https://v3.cn.vuejs.org/api/composition-api.html');
 $row['c_content'] = $ubb->parse();
 
+$listPage = isset($page) ? intval($page) : 1;
+$listPage = $listPage > 0 ? $listPage : 1;
+
 $seo = [
     'title'   => $row['c_title'],
     'keyword' => $row['c_title'],
@@ -38,10 +41,11 @@ $seo = [
 ];
 
 $twigData = [
-    'global' => $global,
-    'router' => $routeVars,
-    'seo'    => $seo,
-    'row'    => $row,
+    'global'   => $global,
+    'router'   => $routeVars,
+    'seo'      => $seo,
+    'row'      => $row,
+    'listPage' => $listPage,
 ];
 
 // <=========== 业务代码结束

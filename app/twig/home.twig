@@ -12,7 +12,7 @@
         <ul class="article-list">
         {% for val in list %}
             <li style="--i: {{ loop.index0 }}">
-                <a class="article-link" href="/detail/{{ val.c_id }}">
+                <a class="article-link" href="/detail/{{ val.c_id }}{% if page > 1 %}?page={{ page }}{% endif %}">
                     <span class="article-id">{{ '%04d'|format(val.c_id) }}</span>
                     <span class="article-title">{{ val.c_title }}</span>
                     <time class="article-time" datetime="{{ val.c_posttime }}">{{ val.c_posttime }}</time>

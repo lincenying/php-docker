@@ -13,7 +13,7 @@ try {
     }
     // 详情数据
     $params      = [$id];
-    $sql         = 'SELECT * FROM cyxw_archive where c_id = ?';
+    $sql         = 'SELECT * FROM archive where c_id = ?';
     $memCacheKey = get_sql_md5($sql, $params);
     if ($onMemCache == false || ! ($row = $memCache->get($memCacheKey))) {
         $row = $db->row($sql, $params);
