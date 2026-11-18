@@ -16,6 +16,7 @@ COPY docker/zzz-fpm.conf /usr/local/etc/php-fpm.d/zzz-fpm.conf
 COPY docker/php-entrypoint.sh /usr/local/bin/php-entrypoint
 
 # 构建产物放在 /opt，启动时同步到 /home/web/app-php，避免共享卷盖住镜像里的代码
+# 通过`docker/php-entrypoint.sh`来同步代码
 WORKDIR /opt/app-php
 
 # 先复制依赖清单，利用 Docker 层缓存
